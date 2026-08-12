@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#111111">
+  <meta name="description" content="Formix PDF - Create professional invoices, forms, contracts and AI-powered documents">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Formix PDF">
+  <title>Formix PDF</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo" aria-label="Formix PDF">
+        <span class="logo-name">Formix</span>
+        <span class="logo-rule"></span>
+        <span class="logo-pdf">PDF</span>
+      </div>
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">☰</button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main" id="mainContent">
+      <!-- Home Screen -->
+      <section id="home" class="screen active">
+        <div class="hero">
+          <h1>Create professional PDFs in seconds</h1>
+          <p class="subtitle">Scan • Invoices • Forms • Contracts • AI</p>
+        </div>
+
+        <div class="feature-grid">
+          <button class="feature-card" data-template="scan">
+            <div class="feature-icon">📷</div>
+            <div class="feature-title">Scan</div>
+            <div class="feature-desc">Camera to PDF</div>
+          </button>
+          <button class="feature-card" data-template="invoice">
+            <div class="feature-icon">📄</div>
+            <div class="feature-title">Invoice</div>
+            <div class="feature-desc">Professional invoices</div>
+          </button>
+          <button class="feature-card" data-template="quote">
+            <div class="feature-icon">💰</div>
+            <div class="feature-title">Quote</div>
+            <div class="feature-desc">Price estimates</div>
+          </button>
+          <button class="feature-card" data-template="contract">
+            <div class="feature-icon">📝</div>
+            <div class="feature-title">Contract</div>
+            <div class="feature-desc">Simple agreements</div>
+          </button>
+          <button class="feature-card" data-template="report">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Report</div>
+            <div class="feature-desc">Branded reports</div>
+          </button>
+          <button class="feature-card" data-template="ai">
+            <div class="feature-icon">✨</div>
+            <div class="feature-title">AI Tools</div>
+            <div class="feature-desc">Rewrite & summarize</div>
+          </button>
+        </div>
+
+        <div class="pricing-banner">
+          <div class="price">$5<span>/month</span></div>
+          <div class="price-text">Unlimited PDFs • No watermarks</div>
+          <button class="btn-primary" id="subscribeBtn">Start Free Trial</button>
+        </div>
+      </section>
+
+      <!-- Template Form Screen -->
+      <section id="formScreen" class="screen">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <h2 id="formTitle">Create Invoice</h2>
+        
+        <form id="pdfForm" class="pdf-form">
+          <!-- Company -->
+          <div class="form-group">
+            <label>Your Company / Name</label>
+            <input type="text" id="companyName" placeholder="Your Company LLC" required>
+          </div>
+          <div class="form-group">
+            <label>Your Email / Phone</label>
+            <input type="text" id="companyContact" placeholder="you@email.com | (555) 123-4567">
+          </div>
+          <div class="form-group">
+            <label>Your Address</label>
+            <input type="text" id="companyAddress" placeholder="123 Main St, City, State">
+          </div>
+
+          <!-- Logo -->
+          <div class="form-group">
+            <label>Company Logo (optional)</label>
+            <div class="logo-upload-row">
+              <label class="logo-upload-btn">
+                Upload Logo
+                <input type="file" id="logoInput" accept="image/*" hidden>
+              </label>
+              <div id="logoPreview" class="logo-preview" style="display:none;">
+                <img id="logoPreviewImg" alt="Logo">
+                <button type="button" id="removeLogoBtn" class="remove-logo">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Client / Saved Customers -->
+          <div class="form-group">
+            <label>Bill To (Client)</label>
+            <div class="customer-row">
+              <select id="customerSelect" class="customer-select">
+                <option value="">— Select saved customer —</option>
+              </select>
+              <button type="button" class="btn-icon-sm" id="manageCustomersBtn" title="Manage customers">✎</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Client Name</label>
+            <input type="text" id="clientName" placeholder="Client or Company" required>
+          </div>
+          <div class="form-group">
+            <label>Client Email</label>
+            <input type="text" id="clientEmail" placeholder="client@email.com" inputmode="email" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Client Address</label>
+            <input type="text" id="clientAddress" placeholder="123 Main St, City, State ZIP" autocomplete="street-address">
+          </div>
+          <div class="form-group save-customer-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="saveCustomerCheck">
+              Save this customer for next time
+            </label>
+          </div>
+
+          <!-- Invoice meta -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Invoice #</label>
+              <input type="text" id="invoiceNumber" placeholder="INV-1001">
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="invoiceDate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="dueDate">
+          </div>
+
+          <!-- Line items -->
+          <div class="section-label">Line Items</div>
+          <div id="lineItems">
+            <div class="line-item">
+              <input type="text" class="item-desc" placeholder="Description of work / product">
+              <div class="line-item-row">
+                <input type="number" class="item-qty" placeholder="Qty" value="1" min="1" step="1">
+                <input type="number" class="item-price" placeholder="Price" step="0.01" min="0">
+              </div>
+            </div>
+          </div>
+          <button type="button" class="btn-secondary full-width" id="addItemBtn">+ Add Item</button>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tax %</label>
+              <input type="number" id="taxRate" placeholder="0" step="0.01" min="0" value="0">
+            </div>
+            <div class="form-group">
+              <label>Discount $</label>
+              <input type="number" id="discount" placeholder="0.00" step="0.01" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes / Payment Terms</label>
+            <textarea id="description" rows="2" placeholder="Payment due within 15 days. Thank you!"></textarea>
+          </div>
+
+          <button type="submit" class="btn-primary full-width">Generate PDF</button>
+        </form>
+      </section>
+
+      <!-- Scan Screen -->
+      <section id="scanScreen" class="screen">
+        <button class="back-btn" id="scanBackBtn">← Back</button>
+        <h2>Scan Document</h2>
+        <p class="scan-subtitle">Take photos or pick images from your gallery. Multiple pages supported.</p>
+
+        <div class="scan-actions">
+          <label class="btn-primary full-width scan-btn">
+            📷 Take Photo
+            <input type="file" id="scanCameraInput" accept="image/*" capture="environment" hidden>
+          </label>
+          <label class="btn-secondary full-width scan-btn">
+            🖼️ Choose from Gallery
+            <input type="file" id="scanGalleryInput" accept="image/*" multiple hidden>
+          </label>
+        </div>
+
+        <div id="scanPreviews" class="scan-previews"></div>
+
+        <div class="scan-options" id="scanOptions" style="display:none;">
+          <div class="section-label" style="margin-top:0;">Page size</div>
+          <select id="scanPageSize" class="customer-select" style="margin-bottom:4px;">
+            <option value="a4">A4 (210 × 297 mm)</option>
+            <option value="letter" selected>Letter (8.5 × 11 in)</option>
+            <option value="legal">Legal (8.5 × 14 in)</option>
+            <option value="a5">A5 (148 × 210 mm)</option>
+            <option value="fit">Fit to image</option>
+          </select>
+
+          <div class="section-label">Default filter (applies to all pages)</div>
+          <div class="filter-row" id="filterRow">
+            <button type="button" class="filter-btn active" data-filter="color">Color</button>
+            <button type="button" class="filter-btn" data-filter="photo">Photo</button>
+            <button type="button" class="filter-btn" data-filter="grayscale">Gray</button>
+            <button type="button" class="filter-btn" data-filter="bw">B&amp;W</button>
+            <button type="button" class="filter-btn" data-filter="document">Doc</button>
+          </div>
+          <p class="filter-hint">Tap a page to open full-screen edit (crop, filter, reorder)</p>
+
+          <label class="checkbox-label" style="margin-top:8px;">
+            <input type="checkbox" id="autoCropCheck" checked>
+            Auto-crop edges (when adding)
+          </label>
+
+          <div class="section-label" style="margin-top:8px;">File name</div>
+          <div class="form-group" style="margin-bottom:4px;">
+            <input type="text" id="scanFileName" placeholder="e.g. Contract-John-Smith" autocomplete="off">
+            <p class="filter-hint" style="margin-top:6px;">Leave empty for automatic name (Scan-…)</p>
+          </div>
+
+          <button class="btn-primary full-width" id="createScanPdfBtn">Create PDF from Scans</button>
+          <button class="btn-secondary full-width" id="clearScansBtn">Clear All</button>
+        </div>
+      </section>
+
+      <!-- AI Tools Screen -->
+      <section id="aiScreen" class="screen">
+        <button class="back-btn" id="aiBackBtn">← Back</button>
+        <h2>AI Tools</h2>
+        <p class="scan-subtitle">Improve text for invoices, emails, contracts and notes.</p>
+
+        <div class="form-group">
+          <label>Your text</label>
+          <textarea id="aiInput" rows="6" placeholder="Paste or type the text you want to improve..."></textarea>
+        </div>
+
+        <div class="ai-actions">
+          <button type="button" class="ai-action-btn" data-action="professional">Make Professional</button>
+          <button type="button" class="ai-action-btn" data-action="shorter">Make Shorter</button>
+          <button type="button" class="ai-action-btn" data-action="friendly">Make Friendly</button>
+          <button type="button" class="ai-action-btn" data-action="clearer">Make Clearer</button>
+          <button type="button" class="ai-action-btn" data-action="payment">Payment Terms</button>
+          <button type="button" class="ai-action-btn" data-action="summarize">Summarize</button>
+        </div>
+
+        <div class="form-group" id="aiResultGroup" style="display:none;">
+          <label>Result</label>
+          <textarea id="aiOutput" rows="6" readonly></textarea>
+          <div class="ai-result-actions">
+            <button type="button" class="btn-primary" id="aiCopyBtn">Copy Result</button>
+            <button type="button" class="btn-secondary" id="aiUseNotesBtn">Use as Invoice Notes</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Success / Preview Screen -->
+      <section id="successScreen" class="screen">
+        <div class="success-content">
+          <div class="success-icon">✓</div>
+          <h2>PDF Ready</h2>
+          <p id="successMessage">Preview your document, then download or share</p>
+
+          <div class="pdf-preview-wrap" id="pdfPreviewWrap">
+            <iframe id="pdfPreviewFrame" title="PDF Preview"></iframe>
+          </div>
+
+          <div class="form-group" style="width:100%;text-align:left;margin:12px 0 4px;">
+            <label for="pdfFileNameInput">File name</label>
+            <div class="customer-row">
+              <input type="text" id="pdfFileNameInput" placeholder="My-Document" autocomplete="off">
+              <span class="file-ext-label">.pdf</span>
+            </div>
+          </div>
+
+          <div class="success-actions">
+            <button class="btn-primary full-width" id="downloadBtn">Download PDF</button>
+            <button class="btn-secondary full-width" id="shareBtn">Share</button>
+            <button class="btn-secondary full-width" id="saveHistoryBtn">Save to History</button>
+            <button class="btn-text full-width" id="newBtn">Create Another</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Screen -->
+      <section id="historyScreen" class="screen">
+        <h2 class="account-title">History</h2>
+        <p class="scan-subtitle">Your recent scanned and generated PDFs</p>
+        <div id="historyList" class="history-list">
+          <div class="history-empty">No documents yet. Scan or create an invoice to see them here.</div>
+        </div>
+        <button class="btn-secondary full-width" id="clearHistoryBtn" style="margin-top:16px;display:none;">Clear History</button>
+      </section>
+
+      <!-- Account / Subscription Screen -->
+      <section id="accountScreen" class="screen">
+        <h2 class="account-title">Account</h2>
+
+        <div class="account-card plan-card">
+          <div class="plan-badge" id="planBadge">Free</div>
+          <div class="plan-name">Formix PDF</div>
+          <div class="plan-price">$5<span>/month</span></div>
+          <ul class="plan-features">
+            <li>Unlimited PDFs</li>
+            <li>No watermarks</li>
+            <li>Document scanner</li>
+            <li>AI text tools</li>
+            <li>Logo branding</li>
+            <li>Invoice, Quote & more</li>
+          </ul>
+          <button class="btn-primary full-width" id="subscribeAccountBtn">Start Free Trial</button>
+          <p class="plan-note" id="planNote">7-day free trial · Cancel anytime</p>
+        </div>
+
+        <div class="account-card">
+          <div class="account-row">
+            <span class="account-label">Status</span>
+            <span class="account-value" id="subStatus">Not subscribed</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Plan</span>
+            <span class="account-value" id="subPlan">Free</span>
+          </div>
+          <div class="account-row">
+            <span class="account-label">Next billing</span>
+            <span class="account-value" id="subBilling">—</span>
+          </div>
+        </div>
+
+        <div class="account-card">
+          <div class="section-label" style="margin-top:0;margin-bottom:12px;">Preferences</div>
+          <div class="form-group">
+            <label>Default company name</label>
+            <input type="text" id="prefCompany" placeholder="Saved for new invoices">
+          </div>
+          <div class="form-group">
+            <label>Default contact</label>
+            <input type="text" id="prefContact" placeholder="Email or phone">
+          </div>
+          <button type="button" class="btn-secondary full-width" id="savePrefsBtn">Save Preferences</button>
+        </div>
+
+        <div class="account-card danger-zone">
+          <button type="button" class="btn-secondary full-width" id="restorePurchaseBtn">Restore Purchase</button>
+          <button type="button" class="btn-text full-width" id="clearDataBtn">Clear local data</button>
+        </div>
+
+        <div class="legal-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <span>·</span>
+          <a href="terms.html">Terms of Use</a>
+        </div>
+        <p class="account-footer">© 2026 Formix PDF. All rights reserved.<br>v1.0 · Made for mobile</p>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-screen="home">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" data-screen="history">
+        <span class="nav-icon">📁</span>
+        <span>History</span>
+      </button>
+      <button class="nav-item" data-screen="ai">
+        <span class="nav-icon">✨</span>
+        <span>AI</span>
+      </button>
+      <button class="nav-item" data-screen="account">
+        <span class="nav-icon">👤</span>
+        <span>Account</span>
+      </button>
+    </nav>
+
+    <!-- Full-screen page editor (outside main so it covers everything) -->
+    <div id="pageEditor" class="page-editor" style="display:none;" aria-hidden="true">
+      <div class="page-editor-header">
+        <button type="button" class="btn-text" id="pageEditorCancel">Cancel</button>
+        <span id="pageEditorTitle">Page 1</span>
+        <button type="button" class="btn-primary-sm" id="pageEditorDone">Done</button>
+      </div>
+      <div class="page-editor-canvas-wrap" id="cropWrap">
+        <img id="cropImage" alt="Page" draggable="false">
+        <div id="cropBox" class="crop-box">
+          <div class="crop-handle tl" data-handle="tl"></div>
+          <div class="crop-handle tr" data-handle="tr"></div>
+          <div class="crop-handle bl" data-handle="bl"></div>
+          <div class="crop-handle br" data-handle="br"></div>
+          <div class="crop-handle t" data-handle="t"></div>
+          <div class="crop-handle b" data-handle="b"></div>
+          <div class="crop-handle l" data-handle="l"></div>
+          <div class="crop-handle r" data-handle="r"></div>
+        </div>
+      </div>
+      <div class="page-editor-toolbar">
+        <div class="section-label" style="margin:0 0 8px;">Filter for this page</div>
+        <div class="filter-row" id="editorFilterRow">
+          <button type="button" class="filter-btn" data-filter="color">Color</button>
+          <button type="button" class="filter-btn" data-filter="photo">Photo</button>
+          <button type="button" class="filter-btn" data-filter="grayscale">Gray</button>
+          <button type="button" class="filter-btn" data-filter="bw">B&amp;W</button>
+          <button type="button" class="filter-btn" data-filter="document">Doc</button>
+        </div>
+        <div class="page-editor-actions">
+          <button type="button" class="btn-secondary" id="pageMoveUp">↑ Move up</button>
+          <button type="button" class="btn-secondary" id="pageMoveDown">↓ Move down</button>
+          <button type="button" class="btn-secondary" id="pageResetCrop">Reset crop</button>
+          <button type="button" class="btn-text" id="pageDeleteBtn" style="color:#dc2626;">Delete page</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
