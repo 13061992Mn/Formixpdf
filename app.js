@@ -1626,30 +1626,51 @@ if (newBtn) {
   });
 }
 
-// ========== SUBSCRIPTION / ACCOUNT ==========
+// ========== SUBSCRIPTION / ACCOUNT (REAL) ==========
 
-function getSubscription() {
+async function loadUserAndSubscription() {
   try {
-    return JSON.parse(localStorage.getItem(SUB_KEY) || "null");
-  } catch {
-    return null;
-  }
-}
+    const { data: { session } } = await supabase.auth.getSession();
+    currentUser = session?.user || null;
 
-function setSubscription(data) {
-  localStorage.setItem(SUB_KEY, JSON.stringify(data));
-  updateAccountUI();
+    if (!currentUser) {
+      realSubscription = null;
+      updateAccountUI();
+      return;
+    }
+
+    // Get subscription from Supabase
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.log("Subscription fetch error:", error.message);
+      realSubscription = null;
+    } else {
+      realSubscription = data;
+    }
+
+    updateAccountUI();
+  } catch (err) {
+    console.log("Auth error:", err);
+    currentUser = null;
+    realSubscription = null;
+    updateAccountUI();
+  }
 }
 
 function isSubscribed() {
-  const sub = getSubscription();
-  if (!sub) return false;
-  if (sub.status === "active") return true;
-  if (sub.status === "trial") {
-    return new Date(sub.trialEnds) > new Date();
-  }
-  return false;
+  if (!realSubscription) return false;
+  const status = realSubscription.status;
+  return status === "active" || status === "trialing";
 }
+
+async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "
 
 function startTrial() {
   const trialEnds = new Date();
