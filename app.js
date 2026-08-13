@@ -24,7 +24,12 @@ const MAX_HISTORY = 20;
 // Leave empty until you have the link — trial still works offline.
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B67sN5P8ggYfrYe0PcfK00";
 const STRIPE_CUSTOMER_PORTAL_LINK = ""; // optional: Billing → Customer portal link
-
+// ========== SUPABASE ==========
+const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let currentUser = null;
+let realSubscription = null;
 // DOM Elements
 const formTitle = document.getElementById("formTitle");
 const pdfForm = document.getElementById("pdfForm");
