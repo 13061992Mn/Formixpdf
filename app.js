@@ -1758,7 +1758,6 @@ function handleCheckoutReturn() {
 }
 
 function updateAccountUI() {
-  const sub = getSubscription();
   const badge = document.getElementById("planBadge");
   const statusEl = document.getElementById("subStatus");
   const planEl = document.getElementById("subPlan");
@@ -1769,65 +1768,65 @@ function updateAccountUI() {
 
   if (!badge) return;
 
-  if (isSubscribed()) {
-    const isTrial = sub && sub.status === "trial";
-    badge.textContent = isTrial ? "Trial" : "Pro";
-    badge.classList.add("active");
-    statusEl.textContent = isTrial ? "Free trial active" : "Active (Stripe)";
-    planEl.textContent = "Pro · $5/mo";
-    const nextDate = sub.nextBilling || sub.trialEnds;
-    billingEl.textContent = nextDate
-      ? new Date(nextDate).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-      : "—";
+  // Not logged in
+  if (!currentUser) {
+    badge.textContent = "Free";
+    badge.classList.remove("active");
+    if (statusEl) statusEl.textContent = "Not signed in";
+    if (planEl) planEl.textContent = "—";
+    if (billingEl) billingEl.textContent = "—";
+    if (noteEl) noteEl.textContent = "Sign in with Google to subscribe";
+    
     if (btn) {
-      if (isTrial) {
-        btn.textContent = STRIPE_PAYMENT_LINK
-          ? "Subscribe with Stripe — $5/mo"
-          : "Subscribe Now — $5/mo";
-        btn.onclick = () => {
-          if (STRIPE_PAYMENT_LINK) goToStripeCheckout();
-          else activateSubscription("manual");
-        };
-      } else {
-        btn.textContent = "Manage Subscription";
-        btn.onclick = goToCustomerPortal;
-      }
+      btn.textContent = "Sign in with Google";
+      btn.onclick = signInWithGoogle;
     }
-    if (noteEl) {
-      noteEl.textContent = isTrial
-        ? "Trial ends " + new Date(sub.trialEnds).toLocaleDateString()
-        : "Thank you for supporting Formix PDF";
+    if (homeBtn) {
+      homeBtn.textContent = "Sign in with Google";
+      homeBtn.onclick = signInWithGoogle;
     }
-    if (homeBtn) homeBtn.textContent = isTrial ? "Trial Active" : "Pro Active";
+    return;
+  }
+
+  // Logged in
+  const email = currentUser.email || "User";
+  
+  if (isSubscribed()) {
+    badge.textContent = "Pro";
+    badge.classList.add("active");
+    if (statusEl) statusEl.textContent = "Active · " + email;
+    if (planEl) planEl.textContent = "Pro · $5/mo";
+    if (billingEl) billingEl.textContent = realSubscription?.current_period_end 
+      ? new Date(realSubscription.current_period_end).toLocaleDateString() 
+      : "—";
+    if (noteEl) noteEl.textContent = "Thank you for subscribing!";
+    
+    if (btn) {
+      btn.textContent = "Manage / Logout";
+      btn.onclick = () => {
+        if (confirm("Open customer portal or logout?")) {
+          // For now just logout (we can improve later)
+          signOut();
+        }
+      };
+    }
   } else {
     badge.textContent = "Free";
     badge.classList.remove("active");
-    statusEl.textContent = "Not subscribed";
-    planEl.textContent = "Free";
-    billingEl.textContent = "—";
+    if (statusEl) statusEl.textContent = "Signed in · " + email;
+    if (planEl) planEl.textContent = "Free";
+    if (billingEl) billingEl.textContent = "—";
+    if (noteEl) noteEl.textContent = "Subscribe to unlock unlimited PDFs";
+    
     if (btn) {
-      btn.textContent = STRIPE_PAYMENT_LINK
-        ? "Subscribe — $5/mo"
-        : "Start Free Trial";
-      btn.onclick = () => {
-        if (STRIPE_PAYMENT_LINK) goToStripeCheckout();
-        else startTrial();
-      };
+      btn.textContent = "Subscribe — $5/mo";
+      btn.onclick = goToStripeCheckout;
     }
-    if (noteEl) {
-      noteEl.textContent = STRIPE_PAYMENT_LINK
-        ? "$5/month · Cancel anytime"
-        : "7-day free trial · Cancel anytime";
-    }
-    if (homeBtn) {
-      homeBtn.textContent = STRIPE_PAYMENT_LINK
-        ? "Subscribe — $5/mo"
-        : "Start Free Trial";
-    }
+  }
+
+  if (homeBtn) {
+    homeBtn.textContent = isSubscribed() ? "Pro Active" : "Subscribe — $5/mo";
+    homeBtn.onclick = isSubscribed() ? () => showScreen("accountScreen") : goToStripeCheckout;
   }
 }
 
