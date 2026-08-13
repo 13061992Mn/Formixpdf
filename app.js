@@ -1628,133 +1628,70 @@ if (newBtn) {
 
 // ========== SUBSCRIPTION / ACCOUNT (REAL) ==========
 
-async function loadUserAndSubscription() {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    currentUser = session?.user || null;
-
-    if (!currentUser) {
-      realSubscription = null;
-      updateAccountUI();
-      return;
+async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin
     }
-
-    // Get subscription from Supabase
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
-
-    if (error) {
-      console.log("Subscription fetch error:", error.message);
-      realSubscription = null;
-    } else {
-      realSubscription = data;
-    }
-
-    updateAccountUI();
-  } catch (err) {
-    console.log("Auth error:", err);
-    currentUser = null;
-    realSubscription = null;
-    updateAccountUI();
+  });
+  if (error) {
+    alert("Login failed: " + error.message);
   }
 }
 
-function isSubscribed() {
-  if (!realSubscription) return false;
-  const status = realSubscription.status;
-  return status === "active" || status === "trialing";
+async function signOut() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  realSubscription = null;
+  updateAccountUI();
+  showScreen("home");
 }
 
-async function signInWithGoogle() {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "
+function getSubscription() {
+  return realSubscription;
+}
+
+function setSubscription() {
+  // no longer used
+}
 
 function startTrial() {
-  const trialEnds = new Date();
-  trialEnds.setDate(trialEnds.getDate() + 7);
-  setSubscription({
-    status: "trial",
-    plan: "Pro",
-    price: 5,
-    started: new Date().toISOString(),
-    trialEnds: trialEnds.toISOString(),
-    nextBilling: trialEnds.toISOString(),
-  });
-  alert("Free trial started!\n\nYou have 7 days of full access.\nThen $5/month via Stripe. Cancel anytime.");
-  updateAccountUI();
+  alert("Please sign in with Google first.");
 }
 
-function activateSubscription(source) {
-  const next = new Date();
-  next.setMonth(next.getMonth() + 1);
-  setSubscription({
-    status: "active",
-    plan: "Pro",
-    price: 5,
-    started: new Date().toISOString(),
-    nextBilling: next.toISOString(),
-    source: source || "stripe",
-  });
-  updateAccountUI();
+function activateSubscription() {
+  // no longer used
 }
 
 function goToStripeCheckout() {
-  if (!STRIPE_PAYMENT_LINK) {
-    alert(
-      "Stripe is not connected yet.\n\n" +
-        "1. Create a $5/month product in Stripe\n" +
-        "2. Create a Payment Link\n" +
-        "3. Paste the link into the app config (STRIPE_PAYMENT_LINK)\n\n" +
-        "For now you can start a free trial on this device."
-    );
+  if (!currentUser) {
+    alert("Please sign in with Google first.");
+    signInWithGoogle();
     return;
   }
-  // After payment Stripe returns here with ?checkout=success
-  const base = window.location.origin + window.location.pathname;
-  const successUrl = encodeURIComponent(base + "?checkout=success");
-  const cancelUrl = encodeURIComponent(base + "?checkout=cancel");
-  let url = STRIPE_PAYMENT_LINK;
-  // Payment Links support prefilled success/cancel via Dashboard;
-  // also append client_reference if using plain link
-  if (!url.includes("?")) {
-    url += `?client_reference_id=formix_${Date.now()}`;
+  if (!STRIPE_PAYMENT_LINK) {
+    alert("Stripe Payment Link is not set.");
+    return;
   }
-  window.location.href = url;
+  window.location.href = STRIPE_PAYMENT_LINK;
 }
 
 function goToCustomerPortal() {
   if (STRIPE_CUSTOMER_PORTAL_LINK) {
     window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
-    return;
+  } else {
+    alert("Customer portal link is not set yet.");
   }
-  alert(
-    "Open your Stripe email receipt or Customer Portal to manage billing.\n\n" +
-      "You can add a Customer Portal link in the app config later."
-  );
 }
 
-// Handle return from Stripe Checkout / Payment Link
 function handleCheckoutReturn() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("checkout");
-    if (status === "success") {
-      activateSubscription("stripe");
-      alert("Payment successful!\n\nWelcome to Formix PDF Pro · $5/month");
-      // Clean URL
-      window.history.replaceState({}, "", window.location.pathname);
-      showScreen("accountScreen");
-      document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
-      document.querySelector('.nav-item[data-screen="account"]')?.classList.add("active");
-      updateAccountUI();
-    } else if (status === "cancel") {
-      window.history.replaceState({}, "", window.location.pathname);
-      alert("Checkout canceled. You can try again anytime.");
-    }
-  } catch (_) {}
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("checkout") === "success") {
+    alert("Payment received! Refreshing status...");
+    window.history.replaceState({}, "", window.location.pathname);
+    loadUserAndSubscription();
+  }
 }
 
 function updateAccountUI() {
