@@ -1822,13 +1822,13 @@ if (subscribeBtn) {
 // Run after Stripe redirect
 handleCheckoutReturn();
 // ========== INIT REAL AUTH ==========
-loadUserAndSubscription();
+// loadUserAndSubscription();
 
 // Listen for login / logout changes
-supabase.auth.onAuthStateChange((event, session) => {
-  currentUser = session?.user || null;
-  loadUserAndSubscription();
-});
+// supabase.auth.onAuthStateChange((event, session) => {
+//  currentUser = session?.user || null;
+//  loadUserAndSubscription();
+// });
 // Preferences
 function loadPrefs() {
   try {
