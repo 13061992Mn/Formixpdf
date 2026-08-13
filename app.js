@@ -1627,7 +1627,43 @@ if (newBtn) {
 }
 
 // ========== SUBSCRIPTION / ACCOUNT (REAL) ==========
+async function loadUserAndSubscription() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    currentUser = session?.user || null;
 
+    if (!currentUser) {
+      realSubscription = null;
+      updateAccountUI();
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      console.log("Subscription fetch error:", error.message);
+      realSubscription = null;
+    } else {
+      realSubscription = data;
+    }
+
+    updateAccountUI();
+  } catch (err) {
+    console.log("Auth error:", err);
+    currentUser = null;
+    realSubscription = null;
+    updateAccountUI();
+  }
+}
+
+function isSubscribed() {
+  if (!realSubscription) return false;
+  return realSubscription.status === "active" || realSubscription.status === "trialing";
+}
 async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
