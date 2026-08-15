@@ -1633,7 +1633,7 @@ if (newBtn) {
 // ========== SUBSCRIPTION / ACCOUNT (REAL) ==========
 
 async function loadUserAndSubscription() {
-  if (!supabase) {
+  if (!sb) {
     currentUser = null;
     realSubscription = null;
     updateAccountUI();
@@ -1641,7 +1641,7 @@ async function loadUserAndSubscription() {
   }
 
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     currentUser = session?.user || null;
 
     if (!currentUser) {
@@ -1650,7 +1650,7 @@ async function loadUserAndSubscription() {
       return;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from("subscriptions")
       .select("*")
       .eq("user_id", currentUser.id)
@@ -1679,12 +1679,12 @@ function isSubscribed() {
 }
 
 async function signInWithGoogle() {
-  if (!supabase) {
+  if (!sb) {
     alert("Authentication is not ready. Please refresh the page.");
     return;
   }
 
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { error } = await sb.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: window.location.origin
@@ -1697,8 +1697,8 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
-  if (supabase) {
-    await supabase.auth.signOut();
+  if (sb) {
+    await sb.auth.signOut();
   }
   currentUser = null;
   realSubscription = null;
@@ -1711,7 +1711,7 @@ function getSubscription() {
 }
 
 function setSubscription() {
-  // no longer used – data comes from Supabase
+  // no longer used
 }
 
 function startTrial() {
@@ -1734,7 +1734,6 @@ function goToStripeCheckout() {
     return;
   }
 
-  // Pass the user id so the webhook can link the subscription
   const url = new URL(STRIPE_PAYMENT_LINK);
   url.searchParams.set("client_reference_id", currentUser.id);
   window.location.href = url.toString();
@@ -1768,7 +1767,6 @@ function updateAccountUI() {
 
   if (!badge) return;
 
-  // Not logged in
   if (!currentUser) {
     badge.textContent = "Free";
     badge.classList.remove("active");
@@ -1788,7 +1786,6 @@ function updateAccountUI() {
     return;
   }
 
-  // Logged in
   const email = currentUser.email || "User";
 
   if (isSubscribed()) {
@@ -1855,8 +1852,8 @@ handleCheckoutReturn();
 // ========== INIT REAL AUTH ==========
 loadUserAndSubscription();
 
-if (supabase) {
-  supabase.auth.onAuthStateChange((_event, session) => {
+if (sb) {
+  sb.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
     loadUserAndSubscription();
   });
