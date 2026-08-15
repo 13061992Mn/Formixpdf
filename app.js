@@ -1801,13 +1801,17 @@ function updateAccountUI() {
     if (noteEl) noteEl.textContent = "Thank you for supporting Formix PDF!";
 
     if (btn) {
-      btn.textContent = "Manage / Logout";
-      btn.onclick = () => {
-        if (confirm("Do you want to log out?")) {
-          signOut();
-        }
-      };
+  btn.textContent = "Manage Subscription";
+  btn.onclick = () => {
+    if (STRIPE_CUSTOMER_PORTAL_LINK) {
+      window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
+    } else {
+      if (confirm("Open customer portal or log out?")) {
+        signOut();
+      }
     }
+  };
+}
   } else {
     badge.textContent = "Free";
     badge.classList.remove("active");
