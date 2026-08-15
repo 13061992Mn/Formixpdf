@@ -27,8 +27,11 @@ const STRIPE_CUSTOMER_PORTAL_LINK = ""; // optional: Billing → Customer portal
 // ========== SUPABASE ==========
 const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
-// const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-const supabase = null; // temporary
+
+const supabase = window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
 let currentUser = null;
 let realSubscription = null;
 // DOM Elements
