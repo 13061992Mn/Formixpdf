@@ -1894,7 +1894,11 @@ document.getElementById("restorePurchaseBtn")?.addEventListener("click", () => {
     alert("No previous purchase found.\n\nIn the real App Store / Play Store version this restores your subscription.");
   }
 });
-
+document.getElementById("logoutBtn")?.addEventListener("click", () => {
+  if (confirm("Are you sure you want to log out?")) {
+    signOut();
+  }
+});
 document.getElementById("clearDataBtn")?.addEventListener("click", () => {
   if (confirm("Clear all local data?\n\nThis removes saved preferences and subscription status on this device.")) {
     localStorage.removeItem(SUB_KEY);
