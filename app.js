@@ -1631,7 +1631,15 @@ if (newBtn) {
 }
 
 // ========== SUBSCRIPTION / ACCOUNT (REAL) ==========
+
 async function loadUserAndSubscription() {
+  if (!supabase) {
+    currentUser = null;
+    realSubscription = null;
+    updateAccountUI();
+    return;
+  }
+
   try {
     const { data: { session } } = await supabase.auth.getSession();
     currentUser = session?.user || null;
@@ -1666,22 +1674,32 @@ async function loadUserAndSubscription() {
 
 function isSubscribed() {
   if (!realSubscription) return false;
-  return realSubscription.status === "active" || realSubscription.status === "trialing";
+  const status = realSubscription.status;
+  return status === "active" || status === "trialing";
 }
+
 async function signInWithGoogle() {
+  if (!supabase) {
+    alert("Authentication is not ready. Please refresh the page.");
+    return;
+  }
+
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: window.location.origin
     }
   });
+
   if (error) {
     alert("Login failed: " + error.message);
   }
 }
 
 async function signOut() {
-  await supabase.auth.signOut();
+  if (supabase) {
+    await supabase.auth.signOut();
+  }
   currentUser = null;
   realSubscription = null;
   updateAccountUI();
@@ -1693,11 +1711,11 @@ function getSubscription() {
 }
 
 function setSubscription() {
-  // no longer used
+  // no longer used – data comes from Supabase
 }
 
 function startTrial() {
-  alert("Please sign in with Google first.");
+  alert("Please sign in with Google first, then subscribe.");
 }
 
 function activateSubscription() {
@@ -1710,25 +1728,30 @@ function goToStripeCheckout() {
     signInWithGoogle();
     return;
   }
+
   if (!STRIPE_PAYMENT_LINK) {
-    alert("Stripe Payment Link is not set.");
+    alert("Stripe Payment Link is not configured yet.");
     return;
   }
-  window.location.href = STRIPE_PAYMENT_LINK;
+
+  // Pass the user id so the webhook can link the subscription
+  const url = new URL(STRIPE_PAYMENT_LINK);
+  url.searchParams.set("client_reference_id", currentUser.id);
+  window.location.href = url.toString();
 }
 
 function goToCustomerPortal() {
   if (STRIPE_CUSTOMER_PORTAL_LINK) {
     window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
   } else {
-    alert("Customer portal link is not set yet.");
+    alert("Customer portal is not set up yet.");
   }
 }
 
 function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("checkout") === "success") {
-    alert("Payment received! Refreshing status...");
+    alert("Payment received! Updating your subscription status...");
     window.history.replaceState({}, "", window.location.pathname);
     loadUserAndSubscription();
   }
@@ -1752,8 +1775,8 @@ function updateAccountUI() {
     if (statusEl) statusEl.textContent = "Not signed in";
     if (planEl) planEl.textContent = "—";
     if (billingEl) billingEl.textContent = "—";
-    if (noteEl) noteEl.textContent = "Sign in with Google to subscribe";
-    
+    if (noteEl) noteEl.textContent = "Sign in with Google to manage your subscription";
+
     if (btn) {
       btn.textContent = "Sign in with Google";
       btn.onclick = signInWithGoogle;
@@ -1767,22 +1790,23 @@ function updateAccountUI() {
 
   // Logged in
   const email = currentUser.email || "User";
-  
+
   if (isSubscribed()) {
     badge.textContent = "Pro";
     badge.classList.add("active");
     if (statusEl) statusEl.textContent = "Active · " + email;
     if (planEl) planEl.textContent = "Pro · $5/mo";
-    if (billingEl) billingEl.textContent = realSubscription?.current_period_end 
-      ? new Date(realSubscription.current_period_end).toLocaleDateString() 
-      : "—";
-    if (noteEl) noteEl.textContent = "Thank you for subscribing!";
-    
+    if (billingEl) {
+      billingEl.textContent = realSubscription?.current_period_end
+        ? new Date(realSubscription.current_period_end).toLocaleDateString()
+        : "—";
+    }
+    if (noteEl) noteEl.textContent = "Thank you for supporting Formix PDF!";
+
     if (btn) {
       btn.textContent = "Manage / Logout";
       btn.onclick = () => {
-        if (confirm("Open customer portal or logout?")) {
-          // For now just logout (we can improve later)
+        if (confirm("Do you want to log out?")) {
           signOut();
         }
       };
@@ -1794,7 +1818,7 @@ function updateAccountUI() {
     if (planEl) planEl.textContent = "Free";
     if (billingEl) billingEl.textContent = "—";
     if (noteEl) noteEl.textContent = "Subscribe to unlock unlimited PDFs";
-    
+
     if (btn) {
       btn.textContent = "Subscribe — $5/mo";
       btn.onclick = goToStripeCheckout;
@@ -1803,7 +1827,9 @@ function updateAccountUI() {
 
   if (homeBtn) {
     homeBtn.textContent = isSubscribed() ? "Pro Active" : "Subscribe — $5/mo";
-    homeBtn.onclick = isSubscribed() ? () => showScreen("accountScreen") : goToStripeCheckout;
+    homeBtn.onclick = isSubscribed()
+      ? () => showScreen("accountScreen")
+      : goToStripeCheckout;
   }
 }
 
@@ -1815,24 +1841,26 @@ if (subscribeBtn) {
       document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
       document.querySelector('.nav-item[data-screen="account"]')?.classList.add("active");
       updateAccountUI();
-    } else if (STRIPE_PAYMENT_LINK) {
+    } else if (currentUser) {
       goToStripeCheckout();
     } else {
-      startTrial();
+      signInWithGoogle();
     }
   });
 }
 
 // Run after Stripe redirect
 handleCheckoutReturn();
-// ========== INIT REAL AUTH ==========
-// loadUserAndSubscription();
 
-// Listen for login / logout changes
-// supabase.auth.onAuthStateChange((event, session) => {
-//  currentUser = session?.user || null;
-//  loadUserAndSubscription();
-// });
+// ========== INIT REAL AUTH ==========
+loadUserAndSubscription();
+
+if (supabase) {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    loadUserAndSubscription();
+  });
+}
 // Preferences
 function loadPrefs() {
   try {
