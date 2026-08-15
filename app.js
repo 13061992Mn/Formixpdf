@@ -28,7 +28,7 @@ const STRIPE_CUSTOMER_PORTAL_LINK = ""; // optional: Billing → Customer portal
 const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
 
-const supabase = window.supabase
+const sb = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
