@@ -25,50 +25,90 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: `Webhook Error: ${err.message}` };
   }
 
-  // Handle the event
-  switch (stripeEvent.type) {
-    case 'checkout.session.completed': {
-      const session = stripeEvent.data.object;
-      const customerId = session.customer;
-      const subscriptionId = session.subscription;
-      const userId = session.client_reference_id;
+  console.log('Received event type:', stripeEvent.type);
 
-      if (userId && subscriptionId) {
+  try {
+    switch (stripeEvent.type) {
+      case 'checkout.session.completed': {
+        const session = stripeEvent.data.object;
+        const customerId = session.customer;
+        const subscriptionId = session.subscription;
+        const userId = session.client_reference_id;
+
+        console.log('checkout.session.completed data:', {
+          userId,
+          customerId,
+          subscriptionId,
+          payment_status: session.payment_status
+        });
+
+        if (!userId) {
+          console.error('Missing client_reference_id (userId)');
+          break;
+        }
+
+        if (!subscriptionId) {
+          console.error('Missing subscriptionId on session');
+          break;
+        }
+
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .upsert(
+            {
+              user_id: userId,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId,
+              status: 'active',
+              updated_at: new Date().toISOString()
+            },
+            { onConflict: 'user_id' }
+          )
+          .select();
+
+        if (error) {
+          console.error('Supabase upsert error:', JSON.stringify(error, null, 2));
+        } else {
+          console.log('Successfully upserted subscription for user:', userId, data);
+        }
+        break;
+      }
+
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const subscription = stripeEvent.data.object;
+        const status = subscription.status;
+
+        console.log('Subscription status change:', {
+          subscriptionId: subscription.id,
+          status
+        });
+
         const { error } = await supabase
           .from('subscriptions')
-          .upsert({
-            user_id: userId,
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            status: 'active',
+          .update({
+            status: status,
             updated_at: new Date().toISOString()
-          }, { onConflict: 'user_id' });
+          })
+          .eq('stripe_subscription_id', subscription.id);
 
-        if (error) console.error('Supabase upsert error:', error);
+        if (error) {
+          console.error('Supabase update error:', JSON.stringify(error, null, 2));
+        } else {
+          console.log('Successfully updated subscription status to:', status);
+        }
+        break;
       }
-      break;
+
+      default:
+        console.log(`Unhandled event type: ${stripeEvent.type}`);
     }
-
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted': {
-      const subscription = stripeEvent.data.object;
-      const status = subscription.status;
-
-      const { error } = await supabase
-        .from('subscriptions')
-        .update({
-          status: status,
-          updated_at: new Date().toISOString()
-        })
-        .eq('stripe_subscription_id', subscription.id);
-
-      if (error) console.error('Supabase update error:', error);
-      break;
-    }
-
-    default:
-      console.log(`Unhandled event type: ${stripeEvent.type}`);
+  } catch (err) {
+    console.error('Unexpected error in webhook handler:', err);
   }
 
-  return { statusCode: 200, body: JSON.stringify({ received: true }) };
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ received: true })
+  };
 };
