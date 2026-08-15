@@ -23,7 +23,7 @@ const MAX_HISTORY = 20;
 // 3. Paste the Payment Link URL below (must start with https://buy.stripe.com/...)
 // Leave empty until you have the link — trial still works offline.
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B67sN5P8ggYfrYe0PcfK00";
-const STRIPE_CUSTOMER_PORTAL_LINK = ""; // optional: Billing → Customer portal link
+const STRIPE_CUSTOMER_PORTAL_LINK = "https://billing.stripe.com/p/login/9B67sN5P8ggYfrYe0PcfK00";
 // ========== SUPABASE ==========
 const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
