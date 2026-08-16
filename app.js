@@ -483,7 +483,13 @@ if (autoCropCheck) {
 
 // ========== FULL-SCREEN PAGE EDITOR (crop + filter + reorder) ==========
 let editorIndex = -1;
-let cropState = { x: 0, y: 0, w: 0, h: 0 }; // relative 0-1
+// 4-corner crop (normalized 0-1)
+let cropState = {
+  tl: { x: 0.05, y: 0.05 },
+  tr: { x: 0.95, y: 0.05 },
+  br: { x: 0.95, y: 0.95 },
+  bl: { x: 0.05, y: 0.95 }
+};
 let dragHandle = null;
 let dragStart = null;
 
@@ -512,13 +518,21 @@ function openPageEditor(index) {
 
     const src = item.original;
     imgEl.onload = () => {
-      if (item.cropNorm) {
-        cropState = { ...item.cropNorm };
-      } else {
-        cropState = { x: 0.05, y: 0.05, w: 0.9, h: 0.9 };
-      }
-      setTimeout(layoutCropBox, 50);
-    };
+      if (item.cropNorm && item.cropNorm.tl) {
+  cropState = {
+    tl: { ...item.cropNorm.tl },
+    tr: { ...item.cropNorm.tr },
+    br: { ...item.cropNorm.br },
+    bl: { ...item.cropNorm.bl }
+  };
+} else {
+  cropState = {
+    tl: { x: 0.05, y: 0.05 },
+    tr: { x: 0.95, y: 0.05 },
+    br: { x: 0.95, y: 0.95 },
+    bl: { x: 0.05, y: 0.95 }
+  };
+}
     // Force reload even if same src
     imgEl.src = "";
     imgEl.src = src;
