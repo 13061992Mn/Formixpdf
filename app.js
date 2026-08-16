@@ -184,7 +184,7 @@ async function handleScanFiles(fileList) {
 // Camera (forces camera on mobile)
 if (scanCameraInput) {
   scanCameraInput.addEventListener("change", async (e) => {
-    await handleScanFiles(e.target.files);
+     await handleScanFiles(e.target.files);
     scanCameraInput.value = "";
   });
 }
@@ -196,7 +196,14 @@ if (scanGalleryInput) {
     scanGalleryInput.value = "";
   });
 }
+// Add more pages buttons
+document.getElementById("addMoreCameraBtn")?.addEventListener("click", () => {
+  scanCameraInput?.click();
+});
 
+document.getElementById("addMoreGalleryBtn")?.addEventListener("click", () => {
+  scanGalleryInput?.click();
+});
 /**
  * Resize + optional auto-crop. Returns color cropped image.
  */
@@ -386,9 +393,13 @@ async function renderScanPreviews() {
         <button type="button" class="page-order-btn" data-action="down" data-index="${index}">↓</button>
       </div>
     `;
-    scanPreviews.appendChild(div);
+        scanPreviews.appendChild(div);
   }
 
+  const addMore = document.getElementById("addMorePages");
+  if (addMore) {
+    addMore.style.display = scannedImages.length > 0 ? "block" : "none";
+  }
 }
 
 // Event delegation for scan previews (works even after re-render)
