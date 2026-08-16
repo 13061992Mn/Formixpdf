@@ -658,11 +658,11 @@ function getPoint(e) {
 
 function onCropStart(e) {
   const handle = e.target.dataset?.handle;
-  if (!handle && e.target !== cropBox) return;
+  if (!handle || !["tl", "tr", "br", "bl"].includes(handle)) return;
   e.preventDefault();
-  dragHandle = handle || "move";
+  dragHandle = handle;
   dragStart = getPoint(e);
-  dragStart.crop = { ...cropState };
+  dragStart.crop = JSON.parse(JSON.stringify(cropState));
 }
 
 function onCropMove(e) {
@@ -670,34 +670,20 @@ function onCropMove(e) {
   e.preventDefault();
   const p = getPoint(e);
   const imgRect = cropImage.getBoundingClientRect();
-  const dx = (p.x - dragStart.x) / imgRect.width;
-  const dy = (p.y - dragStart.y) / imgRect.height;
-  let { x, y, w, h } = dragStart.crop;
-  const minSize = 0.08;
 
-  if (dragHandle === "move") {
-    x = Math.max(0, Math.min(1 - w, x + dx));
-    y = Math.max(0, Math.min(1 - h, y + dy));
-  } else {
-    if (dragHandle.includes("l")) {
-      const nx = Math.max(0, Math.min(x + w - minSize, x + dx));
-      w = w + (x - nx);
-      x = nx;
-    }
-    if (dragHandle.includes("r")) {
-      w = Math.max(minSize, Math.min(1 - x, w + dx));
-    }
-    if (dragHandle.includes("t")) {
-      const ny = Math.max(0, Math.min(y + h - minSize, y + dy));
-      h = h + (y - ny);
-      y = ny;
-    }
-    if (dragHandle.includes("b")) {
-      h = Math.max(minSize, Math.min(1 - y, h + dy));
-    }
-  }
-  cropState = { x, y, w, h };
+  let nx = (p.x - imgRect.left) / imgRect.width;
+  let ny = (p.y - imgRect.top) / imgRect.height;
+
+  nx = Math.max(0, Math.min(1, nx));
+  ny = Math.max(0, Math.min(1, ny));
+
+  cropState[dragHandle] = { x: nx, y: ny };
   layoutCropBox();
+}
+
+function onCropEnd() {
+  dragHandle = null;
+  dragStart = null;
 }
 
 function onCropEnd() {
