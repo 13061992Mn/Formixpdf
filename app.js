@@ -1901,7 +1901,12 @@ handleCheckoutReturn();
 
 // ========== INIT REAL AUTH ==========
 loadUserAndSubscription();
-
+// Check anonymous trial
+if (isAnonymousTrialExpired()) {
+  alert("Your free trial has ended. Please sign in with Google to continue.");
+  // Optional: you can force them to the account screen
+  // showScreen("accountScreen");
+}
 if (sb) {
   sb.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
