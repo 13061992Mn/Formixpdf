@@ -95,6 +95,13 @@ function showScreen(screenId) {
 // Feature cards
 document.querySelectorAll(".feature-card").forEach(card => {
   card.addEventListener("click", () => {
+    // Check anonymous trial before allowing feature use
+    if (isAnonymousTrialExpired()) {
+      alert("Your free 3-day trial has ended.\n\nPlease sign in with Google to continue using Formix PDF.");
+      showScreen("accountScreen");
+      return;
+    }
+
     currentTemplate = card.dataset.template;
 
     if (currentTemplate === "scan") {
@@ -1901,12 +1908,7 @@ handleCheckoutReturn();
 
 // ========== INIT REAL AUTH ==========
 loadUserAndSubscription();
-// Check anonymous trial
-if (isAnonymousTrialExpired()) {
-  alert("Your free trial has ended. Please sign in with Google to continue.");
-  // Optional: you can force them to the account screen
-  // showScreen("accountScreen");
-}
+
 if (sb) {
   sb.auth.onAuthStateChange((_event, session) => {
     currentUser = session?.user || null;
