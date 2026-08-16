@@ -1651,17 +1651,36 @@ async function loadUserAndSubscription() {
     }
 
     const { data, error } = await sb
-      .from("subscriptions")
-      .select("*")
-      .eq("user_id", currentUser.id)
-      .maybeSingle();
+  .from("subscriptions")
+  .select("*")
+  .eq("user_id", currentUser.id)
+  .maybeSingle();
 
-    if (error) {
-      console.log("Subscription fetch error:", error.message);
-      realSubscription = null;
-    } else {
-      realSubscription = data;
-    }
+if (error) {
+  console.log("Subscription fetch error:", error.message);
+  realSubscription = null;
+} else if (data) {
+  realSubscription = data;
+} else {
+  // First time this user signs in → start 3-day free trial
+  const { data: newRow, error: insertError } = await sb
+    .from("subscriptions")
+    .insert({
+      user_id: currentUser.id,
+      status: "trialing",
+      trial_start: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.log("Trial start error:", insertError.message);
+    realSubscription = null;
+  } else {
+    realSubscription = newRow;
+  }
+}
 
     updateAccountUI();
   } catch (err) {
