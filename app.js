@@ -713,10 +713,9 @@ document.querySelectorAll("#editorFilterRow .filter-btn").forEach((btn) => {
 
 // Page size formats for jsPDF (mm)
 const PAGE_SIZES = {
-  a4: { format: "a4", orientation: "portrait" },
-  letter: { format: "letter", orientation: "portrait" },
-  legal: { format: "legal", orientation: "portrait" },
-  a5: { format: "a5", orientation: "portrait" },
+  small:  { format: "a5", orientation: "portrait" },      // smaller page
+  medium: { format: "letter", orientation: "portrait" },  // standard
+  large:  { format: "legal", orientation: "portrait" },   // taller page
   fit: null, // custom size based on first image
 };
 
@@ -733,7 +732,7 @@ createScanPdfBtn.addEventListener("click", async () => {
   createScanPdfBtn.textContent = "Creating PDF…";
 
   try {
-    const sizeKey = document.getElementById("scanPageSize")?.value || "letter";
+    const sizeKey = document.getElementById("scanPageSize")?.value || "medium";
     const margin = 10;
 
     // Prepare filtered images first (uses manual crop / auto-crop + filter)
