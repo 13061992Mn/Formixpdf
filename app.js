@@ -16,7 +16,7 @@ const PREFS_KEY = "formix_prefs";
 const CUSTOMERS_KEY = "formix_customers";
 const HISTORY_KEY = "formix_history";
 const MAX_HISTORY = 20;
-
+const FIRST_OPEN_KEY = "formix_first_open";
 // ========== STRIPE CONFIG ==========
 // 1. Create a Product in Stripe: "Formix PDF Pro" · $5 / month
 // 2. Create a Payment Link for that product (with optional 7-day trial)
@@ -1709,7 +1709,20 @@ function isSubscribed() {
 
   return false;
 }
+function getFirstOpenDate() {
+  const saved = localStorage.getItem(FIRST_OPEN_KEY);
+  if (saved) return new Date(saved);
+  const now = new Date();
+  localStorage.setItem(FIRST_OPEN_KEY, now.toISOString());
+  return now;
+}
 
+function isAnonymousTrialExpired() {
+  if (currentUser) return false;
+  const firstOpen = getFirstOpenDate();
+  const threeDays = 3 * 24 * 60 * 60 * 1000;
+  return (new Date() - firstOpen) > threeDays;
+}
 async function signInWithGoogle() {
   if (!sb) {
     alert("Authentication is not ready. Please refresh the page.");
