@@ -562,18 +562,61 @@ function closePageEditor() {
 }
 
 function layoutCropBox() {
-  if (!cropImage.naturalWidth) return;
+  if (!cropImage || !cropImage.naturalWidth) return;
   const wrapRect = cropWrap.getBoundingClientRect();
   const imgRect = cropImage.getBoundingClientRect();
-  // Position crop box relative to the displayed image
-  const left = cropState.x * imgRect.width + (imgRect.left - wrapRect.left);
-  const top = cropState.y * imgRect.height + (imgRect.top - wrapRect.top);
-  const width = cropState.w * imgRect.width;
-  const height = cropState.h * imgRect.height;
-  cropBox.style.left = left + "px";
-  cropBox.style.top = top + "px";
-  cropBox.style.width = width + "px";
-  cropBox.style.height = height + "px";
+
+  const offsetX = imgRect.left - wrapRect.left;
+  const offsetY = imgRect.top - wrapRect.top;
+  const w = imgRect.width;
+  const h = imgRect.height;
+
+  // Helper to convert normalized point → pixel position inside the wrap
+  function toPx(pt) {
+    return {
+      x: offsetX + pt.x * w,
+      y: offsetY + pt.y * h
+    };
+  }
+
+  const tl = toPx(cropState.tl);
+  const tr = toPx(cropState.tr);
+  const br = toPx(cropState.br);
+  const bl = toPx(cropState.bl);
+
+  // Position the 4 corner handles
+  const handles = {
+    tl: cropBox.querySelector('.crop-handle.tl'),
+    tr: cropBox.querySelector('.crop-handle.tr'),
+    br: cropBox.querySelector('.crop-handle.br'),
+    bl: cropBox.querySelector('.crop-handle.bl')
+  };
+
+  if (handles.tl) {
+    handles.tl.style.left = (tl.x - 18) + "px";
+    handles.tl.style.top = (tl.y - 18) + "px";
+  }
+  if (handles.tr) {
+    handles.tr.style.left = (tr.x - 18) + "px";
+    handles.tr.style.top = (tr.y - 18) + "px";
+  }
+  if (handles.br) {
+    handles.br.style.left = (br.x - 18) + "px";
+    handles.br.style.top = (br.y - 18) + "px";
+  }
+  if (handles.bl) {
+    handles.bl.style.left = (bl.x - 18) + "px";
+    handles.bl.style.top = (bl.y - 18) + "px";
+  }
+
+  // For now keep the cropBox itself covering the whole image area
+  // (we'll improve the visual outline in the next step)
+  cropBox.style.left = offsetX + "px";
+  cropBox.style.top = offsetY + "px";
+  cropBox.style.width = w + "px";
+  cropBox.style.height = h + "px";
+  cropBox.style.border = "none";
+  cropBox.style.boxShadow = "none";
 }
 
 function applyManualCropFromState() {
