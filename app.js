@@ -1673,9 +1673,22 @@ async function loadUserAndSubscription() {
 }
 
 function isSubscribed() {
-  if (!realSubscription) return false;
-  const status = realSubscription.status;
-  return status === "active" || status === "trialing";
+  // Paid subscription
+  if (realSubscription && (realSubscription.status === "active" || realSubscription.status === "trialing")) {
+    return true;
+  }
+
+  // Free trial (3 days)
+  if (realSubscription && realSubscription.trial_start) {
+    const trialStart = new Date(realSubscription.trial_start);
+    const now = new Date();
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    if (now - trialStart < threeDays) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 async function signInWithGoogle() {
