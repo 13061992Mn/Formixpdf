@@ -1821,10 +1821,11 @@ function updateAccountUI() {
   const email = currentUser.email || "User";
 
   if (isSubscribed()) {
-    badge.textContent = "Pro";
-    badge.classList.add("active");
-    if (statusEl) statusEl.textContent = "Active · " + email;
-    if (planEl) planEl.textContent = "Pro · $5/mo";
+    const isTrial = realSubscription && realSubscription.status === "trialing";
+badge.textContent = isTrial ? "Trial" : "Pro";
+badge.classList.add("active");
+if (statusEl) statusEl.textContent = (isTrial ? "Free Trial · " : "Active · ") + email;
+if (planEl) planEl.textContent = isTrial ? "Free Trial (3 days)" : "Pro · $5/mo";
     if (billingEl) {
       billingEl.textContent = realSubscription?.current_period_end
         ? new Date(realSubscription.current_period_end).toLocaleDateString()
