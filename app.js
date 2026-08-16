@@ -617,6 +617,17 @@ function layoutCropBox() {
   cropBox.style.height = h + "px";
   cropBox.style.border = "none";
   cropBox.style.boxShadow = "none";
+    // Draw the 4-corner outline
+  const polygon = document.getElementById("cropPolygon");
+  if (polygon) {
+    const points = [
+      `${tl.x},${tl.y}`,
+      `${tr.x},${tr.y}`,
+      `${br.x},${br.y}`,
+      `${bl.x},${bl.y}`
+    ].join(" ");
+    polygon.setAttribute("points", points);
+  }
 }
 
 function applyManualCropFromState() {
