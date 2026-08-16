@@ -722,6 +722,11 @@ const PAGE_SIZES = {
 
 // Create PDF from scans
 createScanPdfBtn.addEventListener("click", async () => {
+  if (isAnonymousTrialExpired()) {
+  alert("Your free 3-day trial has ended.\n\nPlease sign in with Google to continue using Formix PDF.");
+  showScreen("accountScreen");
+  return;
+}
   if (scannedImages.length === 0) return;
 
   createScanPdfBtn.disabled = true;
@@ -1382,6 +1387,12 @@ let isGeneratingPdf = false;
 
 pdfForm.addEventListener("submit", (e) => {
   e.preventDefault();
+  if (isAnonymousTrialExpired()) {
+  e.preventDefault();
+  alert("Your free 3-day trial has ended.\n\nPlease sign in with Google to continue using Formix PDF.");
+  showScreen("accountScreen");
+  return;
+}
   if (isGeneratingPdf) return;
 
   const submitBtn = pdfForm.querySelector('button[type="submit"]');
