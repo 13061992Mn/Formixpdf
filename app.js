@@ -1332,10 +1332,11 @@ function renderHistory() {
         <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
       </div>
       <div class="history-actions">
-        <button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✎</button>
-        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">↗</button>
-        <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
-      </div>
+        <div class="history-actions">
+  ${item.type === "scan" && item.pages ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✎</button>`}
+  <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">↗</button>
+  <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
+</div>
     </div>`
     )
     .join("");
@@ -1356,7 +1357,28 @@ function renderHistory() {
       lastPdfBlobUrl = item.dataUrl;
     });
   });
+  listEl.querySelectorAll(".history-edit").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const item = getHistory().find((x) => x.id === btn.dataset.id);
+      if (!item || !item.pages || !item.pages.length) {
+        alert("This scan has no editable pages saved.");
+        return;
+      }
 
+      scannedImages = item.pages.map((p) => ({
+        original: p.original,
+        manualCrop: p.manualCrop || null,
+        cropped: p.cropped || null,
+        filter: p.filter || "color",
+        filterCache: {}
+      }));
+
+      currentTemplate = "scan";
+      renderScanPreviews();
+      if (scanOptions) scanOptions.style.display = "flex";
+      showScreen("scanScreen");
+    });
+  });
   listEl.querySelectorAll(".history-rename").forEach((btn) => {
     btn.addEventListener("click", () => {
       const list = getHistory();
