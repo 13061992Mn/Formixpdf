@@ -1497,23 +1497,38 @@ function showSuccessPreview(doc, fileName, title) {
           dataUrl
         };
 
-        // Try with pages first (for re-edit)
-        try {
-          addToHistory({
-            ...baseEntry,
-                        pages: scannedImages.map((img) => ({
-              image: img.manualCrop || img.cropped || img.original,
-              filter: img.filter || "color"
-            }))
-          });
-        } catch (e) {
-          // Fallback: save without pages
-          console.warn("Could not save pages, saving PDF only", e);
-          addToHistory(baseEntry);
+                const pagesData = scannedImages.map((img) => ({
+          image: img.manualCrop || img.cropped || img.original,
+          filter: img.filter || "color"
+        }));
+
+        if (editingHistoryId) {
+          // Update existing history item
+          const list = getHistory();
+          const idx = list.findIndex((x) => x.id === editingHistoryId);
+          if (idx >= 0) {
+            list[idx] = {
+              ...list[idx],
+              title: title || finalName.replace(/\.pdf$/i, ""),
+              fileName: finalName,
+              date: new Date().toISOString(),
+              dataUrl,
+              pages: pagesData
+            };
+            saveHistory(list);
+          } else {
+            addToHistory({ ...baseEntry, pages: pagesData });
+          }
+          editingHistoryId = null;
+        } else {
+          // New scan → add
+          try {
+            addToHistory({ ...baseEntry, pages: pagesData });
+          } catch (e) {
+            console.warn("Could not save pages, saving PDF only", e);
+            addToHistory(baseEntry);
+          }
         }
-      } catch (e) {
-        console.warn("Could not auto-save scan to history", e);
-      }
        }, 100);
   }
 }
