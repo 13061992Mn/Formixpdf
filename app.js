@@ -1466,13 +1466,20 @@ function showSuccessPreview(doc, fileName, title) {
           return;
         }
         addToHistory({
-          id: "h_" + Date.now(),
-          type: "scan",
-          title: title || finalName.replace(/\.pdf$/i, ""),
-          fileName: finalName,
-          date: new Date().toISOString(),
-          dataUrl,
-        });
+  id: "h_" + Date.now(),
+  type: "scan",
+  title: title || finalName.replace(/\.pdf$/i, ""),
+  fileName: finalName,
+  date: new Date().toISOString(),
+  dataUrl,
+  // Store pages so we can re-edit later
+  pages: scannedImages.map((img) => ({
+    original: img.original,
+    manualCrop: img.manualCrop || null,
+    cropped: img.cropped || null,
+    filter: img.filter || "color"
+  }))
+});
       } catch (e) {
         console.warn("Could not auto-save scan to history", e);
       }
