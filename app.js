@@ -429,21 +429,52 @@ async function renderScanPreviews() {
     const src = await getFilteredSrc(item);
     const pageFilter = item.filter || "color";
 
+        div.dataset.index = index;
+    div.draggable = true;
     div.innerHTML = `
       <div class="scan-preview-top" data-edit-index="${index}">
-        <img src="${src}" alt="Page ${index + 1}">
+        <img src="${src}" alt="Page ${index + 1}" draggable="false">
         <span class="page-num">Page ${index + 1} · ${FILTER_LABELS[pageFilter] || pageFilter}</span>
         <button class="remove-page" data-index="${index}">×</button>
       </div>
       <div class="page-order-row">
-        <button type="button" class="page-order-btn" data-action="up" data-index="${index}">↑</button>
         <button type="button" class="page-order-btn edit-page-btn" data-index="${index}">Edit · Crop · Filter</button>
-        <button type="button" class="page-order-btn" data-action="down" data-index="${index}">↓</button>
+        <span class="drag-hint">Hold & drag to reorder</span>
       </div>
     `;
         scanPreviews.appendChild(div);
   }
-
+  // Drag to reorder pages
+  scanPreviews.querySelectorAll(".scan-preview-item").forEach((el) => {
+    el.addEventListener("dragstart", (e) => {
+      dragPageIndex = Number(el.dataset.index);
+      el.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    el.addEventListener("dragend", () => {
+      el.classList.remove("dragging");
+      dragPageIndex = null;
+      scanPreviews.querySelectorAll(".scan-preview-item").forEach((x) => x.classList.remove("drag-over"));
+    });
+    el.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      el.classList.add("drag-over");
+    });
+    el.addEventListener("dragleave", () => {
+      el.classList.remove("drag-over");
+    });
+    el.addEventListener("drop", (e) => {
+      e.preventDefault();
+      el.classList.remove("drag-over");
+      const toIndex = Number(el.dataset.index);
+      if (dragPageIndex === null || dragPageIndex === toIndex) return;
+      const moved = scannedImages.splice(dragPageIndex, 1)[0];
+      scannedImages.splice(toIndex, 0, moved);
+      dragPageIndex = null;
+      renderScanPreviews();
+    });
+  });
   const addMore = document.getElementById("addMorePages");
   if (addMore) {
     addMore.style.display = scannedImages.length > 0 ? "block" : "none";
