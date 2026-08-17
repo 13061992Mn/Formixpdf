@@ -1331,9 +1331,8 @@ function renderHistory() {
         <div class="history-title">${item.title || item.fileName}</div>
         <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
       </div>
-            <div class="history-actions">
-        ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : ""}
-        <button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">Aa</button>
+                  <div class="history-actions">
+        ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">Aa</button>`}
         <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open PDF">↗</button>
         <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
       </div>
