@@ -9,7 +9,7 @@ let lastPdfBlobUrl = null;
 let lastPdfFileName = "";
 let scannedImages = [];
 let companyLogoDataUrl = null; // base64 logo for invoices
-
+let editingHistoryId = null;
 // Storage keys
 const SUB_KEY = "formix_subscription";
 const PREFS_KEY = "formix_prefs";
@@ -483,6 +483,7 @@ if (autoCropCheck) {
 
 // ========== FULL-SCREEN PAGE EDITOR (crop + filter + reorder) ==========
 let editorIndex = -1;
+let editingHistoryId = null;
 // 4-corner crop (normalized 0-1)
 let cropState = {
   tl: { x: 0.05, y: 0.05 },
@@ -1372,10 +1373,11 @@ function renderHistory() {
   filterCache: {}
 }));
 
-      currentTemplate = "scan";
-      renderScanPreviews();
-      if (scanOptions) scanOptions.style.display = "flex";
-      showScreen("scanScreen");
+    currentTemplate = "scan";
+editingHistoryId = item.id;
+renderScanPreviews();
+if (scanOptions) scanOptions.style.display = "flex";
+showScreen("scanScreen");  
     });
   });
   listEl.querySelectorAll(".history-rename").forEach((btn) => {
