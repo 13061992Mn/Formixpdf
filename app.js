@@ -1323,7 +1323,7 @@ function renderHistory() {
     return;
   }
   if (clearBtn) clearBtn.style.display = "block";
-  listEl.innerHTML = list
+    listEl.innerHTML = list
     .map(
       (item) => `
     <div class="history-item" data-id="${item.id}">
@@ -1332,11 +1332,10 @@ function renderHistory() {
         <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
       </div>
       <div class="history-actions">
-        <div class="history-actions">
-  ${item.type === "scan" && item.pages ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✎</button>`}
-  <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">↗</button>
-  <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
-</div>
+        ${item.type === "scan" && item.pages ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✎</button>`}
+        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">↗</button>
+        <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
+      </div>
     </div>`
     )
     .join("");
