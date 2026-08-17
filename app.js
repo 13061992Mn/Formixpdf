@@ -1424,7 +1424,7 @@ function renderHistory() {
         return;
       }
 
-      scannedImages = pages.map((p) => ({
+            scannedImages = pages.map((p) => ({
         original: p.image || p.original,
         manualCrop: null,
         cropped: null,
@@ -1436,6 +1436,9 @@ function renderHistory() {
       editingHistoryId = item.id;
       renderScanPreviews();
       if (scanOptions) scanOptions.style.display = "flex";
+      if (createScanPdfBtn) {
+        createScanPdfBtn.textContent = "Save";
+      }
       showScreen("scanScreen");
     });
   });
