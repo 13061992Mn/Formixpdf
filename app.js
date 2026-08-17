@@ -1474,39 +1474,48 @@ function showSuccessPreview(doc, fileName, title) {
     }
   }, 30);
 
-  // Auto-save scans to history in background (can be heavy)
+    // Auto-save scans to history in background (can be heavy)
   if (currentTemplate === "scan") {
     setTimeout(() => {
       try {
         const finalName = getCurrentPdfFileName();
         lastPdfFileName = finalName;
         const dataUrl = doc.output("datauristring");
-        // Skip if extremely large (localStorage limits)
         if (dataUrl && dataUrl.length > 4_500_000) {
-          console.warn("Scan too large for auto-history; use Save to History only if needed");
+          console.warn("Scan too large for auto-history");
           return;
         }
-        addToHistory({
-  id: "h_" + Date.now(),
-  type: "scan",
-  title: title || finalName.replace(/\.pdf$/i, ""),
-  fileName: finalName,
-  date: new Date().toISOString(),
-  dataUrl,
-  // Store pages so we can re-edit later
-  pages: scannedImages.map((img) => ({
-    original: img.original,
-    manualCrop: img.manualCrop || null,
-    cropped: img.cropped || null,
-    filter: img.filter || "color"
-  }))
-});
+
+        const baseEntry = {
+          id: "h_" + Date.now(),
+          type: "scan",
+          title: title || finalName.replace(/\.pdf$/i, ""),
+          fileName: finalName,
+          date: new Date().toISOString(),
+          dataUrl
+        };
+
+        // Try with pages first (for re-edit)
+        try {
+          addToHistory({
+            ...baseEntry,
+            pages: scannedImages.map((img) => ({
+              original: img.original,
+              manualCrop: img.manualCrop || null,
+              cropped: img.cropped || null,
+              filter: img.filter || "color"
+            }))
+          });
+        } catch (e) {
+          // Fallback: save without pages
+          console.warn("Could not save pages, saving PDF only", e);
+          addToHistory(baseEntry);
+        }
       } catch (e) {
         console.warn("Could not auto-save scan to history", e);
       }
     }, 100);
   }
-}
 
 // Form submit
 let isGeneratingPdf = false;
