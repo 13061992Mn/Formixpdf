@@ -1512,8 +1512,11 @@ function showSuccessPreview(doc, fileName, title) {
       } catch (e) {
         console.warn("Could not auto-save scan to history", e);
       }
-    }, 100);
+       }, 100);
   }
+}
+
+// Form submit
 
 // Form submit
 let isGeneratingPdf = false;
