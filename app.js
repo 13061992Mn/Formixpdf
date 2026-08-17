@@ -727,69 +727,7 @@ function applyManualCropFromState() {
     img.src = item.original;
   });
 }
-      // Create source canvas
-      const srcCanvas = document.createElement("canvas");
-      srcCanvas.width = w;
-      srcCanvas.height = h;
-      const srcCtx = srcCanvas.getContext("2d");
-      srcCtx.drawImage(img, 0, 0);
-      const srcData = srcCtx.getImageData(0, 0, w, h);
-
-      // Output canvas
-      const canvas = document.createElement("canvas");
-      canvas.width = outW;
-      canvas.height = outH;
-      const ctx = canvas.getContext("2d");
-      const outData = ctx.createImageData(outW, outH);
-
-      // Bilinear sample
-      function sample(x, y) {
-        const x0 = Math.floor(x), y0 = Math.floor(y);
-        const x1 = x0 + 1, y1 = y0 + 1;
-        const fx = x - x0, fy = y - y0;
-        if (x0 < 0 || y0 < 0 || x1 >= w || y1 >= h) return [0, 0, 0, 0];
-        const i00 = (y0 * w + x0) * 4;
-        const i10 = (y0 * w + x1) * 4;
-        const i01 = (y1 * w + x0) * 4;
-        const i11 = (y1 * w + x1) * 4;
-        const r = srcData.data[i00] * (1 - fx) * (1 - fy) + srcData.data[i10] * fx * (1 - fy) +
-                  srcData.data[i01] * (1 - fx) * fy + srcData.data[i11] * fx * fy;
-        const g = srcData.data[i00 + 1] * (1 - fx) * (1 - fy) + srcData.data[i10 + 1] * fx * (1 - fy) +
-                  srcData.data[i01 + 1] * (1 - fx) * fy + srcData.data[i11 + 1] * fx * fy;
-        const b = srcData.data[i00 + 2] * (1 - fx) * (1 - fy) + srcData.data[i10 + 2] * fx * (1 - fy) +
-                  srcData.data[i01 + 2] * (1 - fx) * fy + srcData.data[i11 + 2] * fx * fy;
-        const a = srcData.data[i00 + 3] * (1 - fx) * (1 - fy) + srcData.data[i10 + 3] * fx * (1 - fy) +
-                  srcData.data[i01 + 3] * (1 - fx) * fy + srcData.data[i11 + 3] * fx * fy;
-        return [r, g, b, a];
-      }
-
-      for (let y = 0; y < outH; y++) {
-        for (let x = 0; x < outW; x++) {
-          const p = transformPoint(x, y, h);
-          const [r, g, b, a] = sample(p.x, p.y);
-          const i = (y * outW + x) * 4;
-          outData.data[i] = r;
-          outData.data[i + 1] = g;
-          outData.data[i + 2] = b;
-          outData.data[i + 3] = a;
-        }
-      }
-
-      ctx.putImageData(outData, 0, 0);
-
-      item.manualCrop = canvas.toDataURL("image/jpeg", 0.92);
-      item.cropNorm = {
-        tl: { ...cropState.tl },
-        tr: { ...cropState.tr },
-        br: { ...cropState.br },
-        bl: { ...cropState.bl }
-      };
-      item.filterCache = {};
-      resolve();
-    };
-    img.src = item.original;
-  });
-}
+      
 
 // Touch / mouse crop handles
 function getPoint(e) {
