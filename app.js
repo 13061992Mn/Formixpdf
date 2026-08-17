@@ -621,11 +621,11 @@ function layoutCropBox() {
   const polygon = document.getElementById("cropPolygon");
   if (polygon) {
     const points = [
-      `${tl.x},${tl.y}`,
-      `${tr.x},${tr.y}`,
-      `${br.x},${br.y}`,
-      `${bl.x},${bl.y}`
-    ].join(" ");
+  `${tl.x - offsetX},${tl.y - offsetY}`,
+  `${tr.x - offsetX},${tr.y - offsetY}`,
+  `${br.x - offsetX},${br.y - offsetY}`,
+  `${bl.x - offsetX},${bl.y - offsetY}`
+].join(" ");
     polygon.setAttribute("points", points);
   }
 }
