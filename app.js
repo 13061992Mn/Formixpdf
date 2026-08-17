@@ -1703,6 +1703,34 @@ if (saveHistoryBtn) {
       const fileName = getCurrentPdfFileName();
       lastPdfFileName = fileName;
       const title = fileName.replace(/\.pdf$/i, "");
+
+      const pagesData = (currentTemplate === "scan" && scannedImages.length)
+        ? scannedImages.map((img) => ({
+            image: img.manualCrop || img.cropped || img.original,
+            filter: img.filter || "color"
+          }))
+        : null;
+
+      if (editingHistoryId) {
+        const list = getHistory();
+        const idx = list.findIndex((x) => x.id === editingHistoryId);
+        if (idx >= 0) {
+          list[idx] = {
+            ...list[idx],
+            title,
+            fileName,
+            date: new Date().toISOString(),
+            dataUrl,
+            ...(pagesData ? { pages: pagesData } : {})
+          };
+          saveHistory(list);
+          editingHistoryId = null;
+          saveHistoryBtn.textContent = "Updated ✓";
+          setTimeout(() => { saveHistoryBtn.textContent = "Save to History"; }, 1500);
+          return;
+        }
+      }
+
       addToHistory({
         id: "h_" + Date.now(),
         type: currentTemplate || "pdf",
@@ -1710,11 +1738,10 @@ if (saveHistoryBtn) {
         fileName,
         date: new Date().toISOString(),
         dataUrl,
+        ...(pagesData ? { pages: pagesData } : {})
       });
       saveHistoryBtn.textContent = "Saved ✓";
-      setTimeout(() => {
-        saveHistoryBtn.textContent = "Save to History";
-      }, 1500);
+      setTimeout(() => { saveHistoryBtn.textContent = "Save to History"; }, 1500);
     } catch (e) {
       console.warn(e);
       alert("Could not save to history (file may be too large).");
