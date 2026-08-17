@@ -15,7 +15,7 @@ const SUB_KEY = "formix_subscription";
 const PREFS_KEY = "formix_prefs";
 const CUSTOMERS_KEY = "formix_customers";
 const HISTORY_KEY = "formix_history";
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 500;
 const FIRST_OPEN_KEY = "formix_first_open";
 // ========== INDEXEDDB FOR SCAN PAGES ==========
 const IDB_NAME = "formix_db";
