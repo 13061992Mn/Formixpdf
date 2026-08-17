@@ -483,7 +483,6 @@ if (autoCropCheck) {
 
 // ========== FULL-SCREEN PAGE EDITOR (crop + filter + reorder) ==========
 let editorIndex = -1;
-let editingHistoryId = null;
 // 4-corner crop (normalized 0-1)
 let cropState = {
   tl: { x: 0.05, y: 0.05 },
