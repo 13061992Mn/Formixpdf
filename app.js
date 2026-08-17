@@ -517,22 +517,26 @@ function openPageEditor(index) {
     if (titleEl) titleEl.textContent = `Page ${index + 1} of ${scannedImages.length}`;
 
     const src = item.original;
+
     imgEl.onload = () => {
       if (item.cropNorm && item.cropNorm.tl) {
-  cropState = {
-    tl: { ...item.cropNorm.tl },
-    tr: { ...item.cropNorm.tr },
-    br: { ...item.cropNorm.br },
-    bl: { ...item.cropNorm.bl }
-  };
-} else {
-  cropState = {
-    tl: { x: 0.05, y: 0.05 },
-    tr: { x: 0.95, y: 0.05 },
-    br: { x: 0.95, y: 0.95 },
-    bl: { x: 0.05, y: 0.95 }
-  };
-}
+        cropState = {
+          tl: { ...item.cropNorm.tl },
+          tr: { ...item.cropNorm.tr },
+          br: { ...item.cropNorm.br },
+          bl: { ...item.cropNorm.bl }
+        };
+      } else {
+        cropState = {
+          tl: { x: 0.05, y: 0.05 },
+          tr: { x: 0.95, y: 0.05 },
+          br: { x: 0.95, y: 0.95 },
+          bl: { x: 0.05, y: 0.95 }
+        };
+      }
+      setTimeout(layoutCropBox, 50);
+    };
+
     // Force reload even if same src
     imgEl.src = "";
     imgEl.src = src;
