@@ -593,21 +593,21 @@ function layoutCropBox() {
   };
 
   if (handles.tl) {
-    handles.tl.style.left = (tl.x - 18) + "px";
-    handles.tl.style.top = (tl.y - 18) + "px";
-  }
-  if (handles.tr) {
-    handles.tr.style.left = (tr.x - 18) + "px";
-    handles.tr.style.top = (tr.y - 18) + "px";
-  }
-  if (handles.br) {
-    handles.br.style.left = (br.x - 18) + "px";
-    handles.br.style.top = (br.y - 18) + "px";
-  }
-  if (handles.bl) {
-    handles.bl.style.left = (bl.x - 18) + "px";
-    handles.bl.style.top = (bl.y - 18) + "px";
-  }
+  handles.tl.style.left = (tl.x - offsetX - 18) + "px";
+  handles.tl.style.top = (tl.y - offsetY - 18) + "px";
+}
+if (handles.tr) {
+  handles.tr.style.left = (tr.x - offsetX - 18) + "px";
+  handles.tr.style.top = (tr.y - offsetY - 18) + "px";
+}
+if (handles.br) {
+  handles.br.style.left = (br.x - offsetX - 18) + "px";
+  handles.br.style.top = (br.y - offsetY - 18) + "px";
+}
+if (handles.bl) {
+  handles.bl.style.left = (bl.x - offsetX - 18) + "px";
+  handles.bl.style.top = (bl.y - offsetY - 18) + "px";
+}
 
   // For now keep the cropBox itself covering the whole image area
   // (we'll improve the visual outline in the next step)
