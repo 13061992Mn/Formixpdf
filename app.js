@@ -17,6 +17,53 @@ const CUSTOMERS_KEY = "formix_customers";
 const HISTORY_KEY = "formix_history";
 const MAX_HISTORY = 20;
 const FIRST_OPEN_KEY = "formix_first_open";
+// ========== INDEXEDDB FOR SCAN PAGES ==========
+const IDB_NAME = "formix_db";
+const IDB_STORE = "scan_pages";
+
+function openFormixDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSavePages(id, pages) {
+  const db = await openFormixDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put({ id, pages });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function idbGetPages(id) {
+  const db = await openFormixDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readonly");
+    const req = tx.objectStore(IDB_STORE).get(id);
+    req.onsuccess = () => resolve(req.result ? req.result.pages : null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbDeletePages(id) {
+  const db = await openFormixDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
 // ========== STRIPE CONFIG ==========
 // 1. Create a Product in Stripe: "Formix PDF Pro" · $5 / month
 // 2. Create a Payment Link for that product (with optional 7-day trial)
