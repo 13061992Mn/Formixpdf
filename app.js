@@ -196,13 +196,14 @@ if (scanGalleryInput) {
     scanGalleryInput.value = "";
   });
 }
-// Add more pages buttons
-document.getElementById("addMoreCameraBtn")?.addEventListener("click", () => {
-  scanCameraInput?.click();
+// Add more pages (single button)
+document.getElementById("addMorePagesBtn")?.addEventListener("click", () => {
+  document.getElementById("addMoreInput")?.click();
 });
 
-document.getElementById("addMoreGalleryBtn")?.addEventListener("click", () => {
-  scanGalleryInput?.click();
+document.getElementById("addMoreInput")?.addEventListener("change", async (e) => {
+  await handleScanFiles(e.target.files);
+  e.target.value = "";
 });
 /**
  * Resize + optional auto-crop. Returns color cropped image.
