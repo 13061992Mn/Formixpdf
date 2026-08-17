@@ -1331,9 +1331,10 @@ function renderHistory() {
         <div class="history-title">${item.title || item.fileName}</div>
         <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
       </div>
-      <div class="history-actions">
-        ${item.type === "scan" && item.pages ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✎</button>`}
-        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">↗</button>
+            <div class="history-actions">
+        ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : ""}
+        <button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">Aa</button>
+        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open PDF">↗</button>
         <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
       </div>
     </div>`
@@ -1356,27 +1357,29 @@ function renderHistory() {
       lastPdfBlobUrl = item.dataUrl;
     });
   });
-  listEl.querySelectorAll(".history-edit").forEach((btn) => {
+    listEl.querySelectorAll(".history-edit").forEach((btn) => {
     btn.addEventListener("click", () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
-      if (!item || !item.pages || !item.pages.length) {
-        alert("This scan has no editable pages saved.");
+      if (!item) return;
+
+      if (!item.pages || !item.pages.length) {
+        alert("This scan has no editable pages saved.\n\nCreate a new scan after this update, or the file was too large to store page data.");
         return;
       }
 
       scannedImages = item.pages.map((p) => ({
-  original: p.image || p.original,
-  manualCrop: null,
-  cropped: null,
-  filter: p.filter || "color",
-  filterCache: {}
-}));
+        original: p.image || p.original,
+        manualCrop: null,
+        cropped: null,
+        filter: p.filter || "color",
+        filterCache: {}
+      }));
 
-    currentTemplate = "scan";
-editingHistoryId = item.id;
-renderScanPreviews();
-if (scanOptions) scanOptions.style.display = "flex";
-showScreen("scanScreen");  
+      currentTemplate = "scan";
+      editingHistoryId = item.id;
+      renderScanPreviews();
+      if (scanOptions) scanOptions.style.display = "flex";
+      showScreen("scanScreen");
     });
   });
   listEl.querySelectorAll(".history-rename").forEach((btn) => {
