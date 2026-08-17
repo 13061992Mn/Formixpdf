@@ -1477,64 +1477,7 @@ function showSuccessPreview(doc, fileName, title) {
     }
   }, 30);
 
-      // Auto-save scans to history in background
-  if (currentTemplate === "scan") {
-    setTimeout(() => {
-      try {
-        const finalName = getCurrentPdfFileName();
-        lastPdfFileName = finalName;
-        const dataUrl = doc.output("datauristring");
-        if (dataUrl && dataUrl.length > 4_500_000) {
-          console.warn("Scan too large for auto-history");
-          return;
-        }
-
-        const baseEntry = {
-          id: "h_" + Date.now(),
-          type: "scan",
-          title: title || finalName.replace(/\.pdf$/i, ""),
-          fileName: finalName,
-          date: new Date().toISOString(),
-          dataUrl
-        };
-
-        const pagesData = scannedImages.map((img) => ({
-          image: img.manualCrop || img.cropped || img.original,
-          filter: img.filter || "color"
-        }));
-
-        if (editingHistoryId) {
-          // Update existing history item
-          const list = getHistory();
-          const idx = list.findIndex((x) => x.id === editingHistoryId);
-          if (idx >= 0) {
-            list[idx] = {
-              ...list[idx],
-              title: title || finalName.replace(/\.pdf$/i, ""),
-              fileName: finalName,
-              date: new Date().toISOString(),
-              dataUrl,
-              pages: pagesData
-            };
-            saveHistory(list);
-          } else {
-            addToHistory({ ...baseEntry, pages: pagesData });
-          }
-          editingHistoryId = null;
-        } else {
-          // New scan → add
-          try {
-            addToHistory({ ...baseEntry, pages: pagesData });
-          } catch (e) {
-            console.warn("Could not save pages, saving PDF only", e);
-            addToHistory(baseEntry);
-          }
-        }
-      } catch (e) {
-        console.warn("Could not auto-save scan to history", e);
-      }
-    }, 100);
-  }
+      
 }
 
 // Form submit
