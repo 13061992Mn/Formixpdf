@@ -208,10 +208,12 @@
         </div>
 
         <div id="scanPreviews" class="scan-previews"></div>
-        <div id="addMorePages" class="add-more-pages" style="display:none; margin: 16px 0;">
-  <button type="button" class="btn-secondary full-width" id="addMoreCameraBtn">📷 Add more pages (Camera)</button>
-  <button type="button" class="btn-secondary full-width" id="addMoreGalleryBtn" style="margin-top:8px;">🖼️ Add more pages (Gallery)</button>
-</div>
+              <div id="addMorePages" class="add-more-pages" style="display:none; margin-top:12px;">
+        <button type="button" class="btn-secondary full-width" id="addMorePagesBtn">
+          + Add pages
+        </button>
+        <input type="file" id="addMoreInput" accept="image/*" multiple style="display:none;" />
+      </div>
 
         <div class="scan-options" id="scanOptions" style="display:none;">
           <div class="section-label" style="margin-top:0;">Page size</div>
