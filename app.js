@@ -1365,12 +1365,12 @@ function renderHistory() {
       }
 
       scannedImages = item.pages.map((p) => ({
-        original: p.original,
-        manualCrop: p.manualCrop || null,
-        cropped: p.cropped || null,
-        filter: p.filter || "color",
-        filterCache: {}
-      }));
+  original: p.image || p.original,
+  manualCrop: null,
+  cropped: null,
+  filter: p.filter || "color",
+  filterCache: {}
+}));
 
       currentTemplate = "scan";
       renderScanPreviews();
@@ -1499,10 +1499,8 @@ function showSuccessPreview(doc, fileName, title) {
         try {
           addToHistory({
             ...baseEntry,
-            pages: scannedImages.map((img) => ({
-              original: img.original,
-              manualCrop: img.manualCrop || null,
-              cropped: img.cropped || null,
+                        pages: scannedImages.map((img) => ({
+              image: img.manualCrop || img.cropped || img.original,
               filter: img.filter || "color"
             }))
           });
