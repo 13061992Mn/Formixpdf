@@ -1475,7 +1475,7 @@ function showSuccessPreview(doc, fileName, title) {
     }
   }, 30);
 
-    // Auto-save scans to history in background (can be heavy)
+      // Auto-save scans to history in background
   if (currentTemplate === "scan") {
     setTimeout(() => {
       try {
@@ -1496,7 +1496,7 @@ function showSuccessPreview(doc, fileName, title) {
           dataUrl
         };
 
-                const pagesData = scannedImages.map((img) => ({
+        const pagesData = scannedImages.map((img) => ({
           image: img.manualCrop || img.cropped || img.original,
           filter: img.filter || "color"
         }));
@@ -1528,7 +1528,10 @@ function showSuccessPreview(doc, fileName, title) {
             addToHistory(baseEntry);
           }
         }
-       }, 100);
+      } catch (e) {
+        console.warn("Could not auto-save scan to history", e);
+      }
+    }, 100);
   }
 }
 
