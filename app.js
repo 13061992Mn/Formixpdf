@@ -1404,17 +1404,27 @@ function renderHistory() {
       lastPdfBlobUrl = item.dataUrl;
     });
   });
-    listEl.querySelectorAll(".history-edit").forEach((btn) => {
-    btn.addEventListener("click", () => {
+      listEl.querySelectorAll(".history-edit").forEach((btn) => {
+    btn.addEventListener("click", async () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
       if (!item) return;
 
-      if (!item.pages || !item.pages.length) {
-        alert("This scan has no editable pages saved.\n\nCreate a new scan after this update, or the file was too large to store page data.");
+      let pages = null;
+      try {
+        pages = await idbGetPages(item.id);
+      } catch (e) {
+        console.warn(e);
+      }
+      if ((!pages || !pages.length) && item.pages) {
+        pages = item.pages;
+      }
+
+      if (!pages || !pages.length) {
+        alert("This scan has no editable pages saved.");
         return;
       }
 
-      scannedImages = item.pages.map((p) => ({
+      scannedImages = pages.map((p) => ({
         original: p.image || p.original,
         manualCrop: null,
         cropped: null,
@@ -1449,11 +1459,13 @@ function renderHistory() {
     });
   });
 
-  listEl.querySelectorAll(".history-delete").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    listEl.querySelectorAll(".history-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
       if (!confirm("Remove this document from history?")) return;
-      const list = getHistory().filter((x) => x.id !== btn.dataset.id);
+      const id = btn.dataset.id;
+      const list = getHistory().filter((x) => x.id !== id);
       saveHistory(list);
+      try { await idbDeletePages(id); } catch (e) {}
       renderHistory();
     });
   });
@@ -1736,7 +1748,7 @@ if (shareBtn) {
 
 // Save to History (manual)
 if (saveHistoryBtn) {
-  saveHistoryBtn.addEventListener("click", () => {
+  saveHistoryBtn.addEventListener("click", async () => {
     if (!lastPdfDoc && !(lastPdfBlobUrl && lastPdfBlobUrl.startsWith("data:"))) {
       alert("No PDF to save.");
       return;
@@ -1768,10 +1780,12 @@ if (saveHistoryBtn) {
             title,
             fileName,
             date: new Date().toISOString(),
-            dataUrl,
-            ...(pagesData ? { pages: pagesData } : {})
+            dataUrl
           };
           saveHistory(list);
+          if (pagesData) {
+            try { await idbSavePages(editingHistoryId, pagesData); } catch (e) { console.warn(e); }
+          }
           editingHistoryId = null;
           saveHistoryBtn.textContent = "Updated ✓";
           setTimeout(() => { saveHistoryBtn.textContent = "Save to History"; }, 1500);
@@ -1779,15 +1793,18 @@ if (saveHistoryBtn) {
         }
       }
 
+      const id = "h_" + Date.now();
       addToHistory({
-        id: "h_" + Date.now(),
+        id,
         type: currentTemplate || "pdf",
         title,
         fileName,
         date: new Date().toISOString(),
-        dataUrl,
-        ...(pagesData ? { pages: pagesData } : {})
+        dataUrl
       });
+      if (pagesData) {
+        try { await idbSavePages(id, pagesData); } catch (e) { console.warn(e); }
+      }
       saveHistoryBtn.textContent = "Saved ✓";
       setTimeout(() => { saveHistoryBtn.textContent = "Save to History"; }, 1500);
     } catch (e) {
