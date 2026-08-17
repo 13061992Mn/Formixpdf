@@ -644,61 +644,123 @@ function applyManualCropFromState() {
       const w = img.width;
       const h = img.height;
 
-      // Convert normalized corners to pixel coordinates
-      const src = {
-        tl: { x: cropState.tl.x * w, y: cropState.tl.y * h },
-        tr: { x: cropState.tr.x * w, y: cropState.tr.y * h },
-        br: { x: cropState.br.x * w, y: cropState.br.y * h },
-        bl: { x: cropState.bl.x * w, y: cropState.bl.y * h }
-      };
+      // Source corners in pixels
+      const src = [
+        { x: cropState.tl.x * w, y: cropState.tl.y * h }, // 0 tl
+        { x: cropState.tr.x * w, y: cropState.tr.y * h }, // 1 tr
+        { x: cropState.br.x * w, y: cropState.br.y * h }, // 2 br
+        { x: cropState.bl.x * w, y: cropState.bl.y * h }  // 3 bl
+      ];
 
-      // Output size based on average side lengths
-      const widthTop = Math.hypot(src.tr.x - src.tl.x, src.tr.y - src.tl.y);
-      const widthBottom = Math.hypot(src.br.x - src.bl.x, src.br.y - src.bl.y);
-      const heightLeft = Math.hypot(src.bl.x - src.tl.x, src.bl.y - src.tl.y);
-      const heightRight = Math.hypot(src.br.x - src.tr.x, src.br.y - src.tr.y);
+      // Output size from average edge lengths
+      const widthTop = Math.hypot(src[1].x - src[0].x, src[1].y - src[0].y);
+      const widthBottom = Math.hypot(src[2].x - src[3].x, src[2].y - src[3].y);
+      const heightLeft = Math.hypot(src[3].x - src[0].x, src[3].y - src[0].y);
+      const heightRight = Math.hypot(src[2].x - src[1].x, src[2].y - src[1].y);
 
       const outW = Math.max(50, Math.round((widthTop + widthBottom) / 2));
       const outH = Math.max(50, Math.round((heightLeft + heightRight) / 2));
 
+      // Destination corners (rectangle)
+      const dst = [
+        { x: 0, y: 0 },
+        { x: outW, y: 0 },
+        { x: outW, y: outH },
+        { x: 0, y: outH }
+      ];
+
+      // Compute perspective transform matrix (homography)
+      function getPerspectiveTransform(srcPts, dstPts) {
+        const A = [];
+        const b = [];
+        for (let i = 0; i < 4; i++) {
+          const s = srcPts[i], d = dstPts[i];
+          A.push([s.x, s.y, 1, 0, 0, 0, -d.x * s.x, -d.x * s.y]);
+          A.push([0, 0, 0, s.x, s.y, 1, -d.y * s.x, -d.y * s.y]);
+          b.push(d.x, d.y);
+        }
+        // Solve Ah = b (Gaussian elimination)
+        const n = 8;
+        const M = A.map((row, i) => row.concat([b[i]]));
+        for (let col = 0; col < n; col++) {
+          let pivot = col;
+          for (let row = col + 1; row < n; row++) {
+            if (Math.abs(M[row][col]) > Math.abs(M[pivot][col])) pivot = row;
+          }
+          [M[col], M[pivot]] = [M[pivot], M[col]];
+          const div = M[col][col] || 1e-12;
+          for (let j = col; j <= n; j++) M[col][j] /= div;
+          for (let row = 0; row < n; row++) {
+            if (row === col) continue;
+            const factor = M[row][col];
+            for (let j = col; j <= n; j++) M[row][j] -= factor * M[col][j];
+          }
+        }
+        const h = M.map(row => row[n]);
+        h.push(1);
+        return h;
+      }
+
+      // We need the inverse: destination → source
+      const h = getPerspectiveTransform(dst, src);
+
+      function transformPoint(x, y, mat) {
+        const w = mat[6] * x + mat[7] * y + mat[8];
+        return {
+          x: (mat[0] * x + mat[1] * y + mat[2]) / w,
+          y: (mat[3] * x + mat[4] * y + mat[5]) / w
+        };
+      }
+
+      // Create source canvas
+      const srcCanvas = document.createElement("canvas");
+      srcCanvas.width = w;
+      srcCanvas.height = h;
+      const srcCtx = srcCanvas.getContext("2d");
+      srcCtx.drawImage(img, 0, 0);
+      const srcData = srcCtx.getImageData(0, 0, w, h);
+
+      // Output canvas
       const canvas = document.createElement("canvas");
       canvas.width = outW;
       canvas.height = outH;
       const ctx = canvas.getContext("2d");
+      const outData = ctx.createImageData(outW, outH);
 
-      // Simple but effective perspective-like mapping using triangles
-      // (good enough for documents and much better than a plain rectangle)
-      function drawTriangle(dst1, dst2, dst3, src1, src2, src3) {
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(dst1.x, dst1.y);
-        ctx.lineTo(dst2.x, dst2.y);
-        ctx.lineTo(dst3.x, dst3.y);
-        ctx.closePath();
-        ctx.clip();
-
-        // Compute affine transform for this triangle
-        const denom = (src1.x * (src2.y - src3.y) + src2.x * (src3.y - src1.y) + src3.x * (src1.y - src2.y));
-        if (Math.abs(denom) < 1e-6) { ctx.restore(); return; }
-
-        // For simplicity we use drawImage with a bounding approach first
-        // Full high-quality perspective can be improved later
-        ctx.restore();
+      // Bilinear sample
+      function sample(x, y) {
+        const x0 = Math.floor(x), y0 = Math.floor(y);
+        const x1 = x0 + 1, y1 = y0 + 1;
+        const fx = x - x0, fy = y - y0;
+        if (x0 < 0 || y0 < 0 || x1 >= w || y1 >= h) return [0, 0, 0, 0];
+        const i00 = (y0 * w + x0) * 4;
+        const i10 = (y0 * w + x1) * 4;
+        const i01 = (y1 * w + x0) * 4;
+        const i11 = (y1 * w + x1) * 4;
+        const r = srcData.data[i00] * (1 - fx) * (1 - fy) + srcData.data[i10] * fx * (1 - fy) +
+                  srcData.data[i01] * (1 - fx) * fy + srcData.data[i11] * fx * fy;
+        const g = srcData.data[i00 + 1] * (1 - fx) * (1 - fy) + srcData.data[i10 + 1] * fx * (1 - fy) +
+                  srcData.data[i01 + 1] * (1 - fx) * fy + srcData.data[i11 + 1] * fx * fy;
+        const b = srcData.data[i00 + 2] * (1 - fx) * (1 - fy) + srcData.data[i10 + 2] * fx * (1 - fy) +
+                  srcData.data[i01 + 2] * (1 - fx) * fy + srcData.data[i11 + 2] * fx * fy;
+        const a = srcData.data[i00 + 3] * (1 - fx) * (1 - fy) + srcData.data[i10 + 3] * fx * (1 - fy) +
+                  srcData.data[i01 + 3] * (1 - fx) * fy + srcData.data[i11 + 3] * fx * fy;
+        return [r, g, b, a];
       }
 
-      // Practical approach: use the bounding box of the 4 points for now
-      // + we keep the 4-corner data so we can improve the warp later
-      const minX = Math.min(src.tl.x, src.tr.x, src.br.x, src.bl.x);
-      const maxX = Math.max(src.tl.x, src.tr.x, src.br.x, src.bl.x);
-      const minY = Math.min(src.tl.y, src.tr.y, src.br.y, src.bl.y);
-      const maxY = Math.max(src.tl.y, src.tr.y, src.br.y, src.bl.y);
+      for (let y = 0; y < outH; y++) {
+        for (let x = 0; x < outW; x++) {
+          const p = transformPoint(x, y, h);
+          const [r, g, b, a] = sample(p.x, p.y);
+          const i = (y * outW + x) * 4;
+          outData.data[i] = r;
+          outData.data[i + 1] = g;
+          outData.data[i + 2] = b;
+          outData.data[i + 3] = a;
+        }
+      }
 
-      const bw = Math.max(10, maxX - minX);
-      const bh = Math.max(10, maxY - minY);
-
-      canvas.width = Math.round(bw);
-      canvas.height = Math.round(bh);
-      ctx.drawImage(img, minX, minY, bw, bh, 0, 0, canvas.width, canvas.height);
+      ctx.putImageData(outData, 0, 0);
 
       item.manualCrop = canvas.toDataURL("image/jpeg", 0.92);
       item.cropNorm = {
