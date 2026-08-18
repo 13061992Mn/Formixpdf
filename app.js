@@ -454,8 +454,9 @@ async function renderScanPreviews() {
       el.classList.add("dragging");
     }, { passive: true });
 
-    el.addEventListener("touchmove", (e) => {
+        el.addEventListener("touchmove", (e) => {
       if (touchDragIndex === null) return;
+      e.preventDefault(); // stop the screen from scrolling
       const y = e.touches[0].clientY;
       const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
       items.forEach((item) => item.classList.remove("drag-over"));
@@ -466,7 +467,7 @@ async function renderScanPreviews() {
           break;
         }
       }
-    }, { passive: true });
+    }, { passive: false });
 
     el.addEventListener("touchend", (e) => {
       if (touchDragIndex === null) return;
