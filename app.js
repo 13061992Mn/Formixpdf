@@ -444,35 +444,50 @@ async function renderScanPreviews() {
     `;
         scanPreviews.appendChild(div);
   }
-  // Drag to reorder pages
+    // Touch drag to reorder (works on iPhone)
+  let touchDragIndex = null;
+
   scanPreviews.querySelectorAll(".scan-preview-item").forEach((el) => {
-    el.addEventListener("dragstart", (e) => {
-      dragPageIndex = Number(el.dataset.index);
+    el.addEventListener("touchstart", (e) => {
+      if (e.target.closest("button")) return;
+      touchDragIndex = Number(el.dataset.index);
       el.classList.add("dragging");
-      e.dataTransfer.effectAllowed = "move";
-    });
-    el.addEventListener("dragend", () => {
+    }, { passive: true });
+
+    el.addEventListener("touchmove", (e) => {
+      if (touchDragIndex === null) return;
+      const y = e.touches[0].clientY;
+      const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
+      items.forEach((item) => item.classList.remove("drag-over"));
+      for (const item of items) {
+        const rect = item.getBoundingClientRect();
+        if (y >= rect.top && y <= rect.bottom) {
+          item.classList.add("drag-over");
+          break;
+        }
+      }
+    }, { passive: true });
+
+    el.addEventListener("touchend", (e) => {
+      if (touchDragIndex === null) return;
       el.classList.remove("dragging");
-      dragPageIndex = null;
-      scanPreviews.querySelectorAll(".scan-preview-item").forEach((x) => x.classList.remove("drag-over"));
-    });
-    el.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      el.classList.add("drag-over");
-    });
-    el.addEventListener("dragleave", () => {
-      el.classList.remove("drag-over");
-    });
-    el.addEventListener("drop", (e) => {
-      e.preventDefault();
-      el.classList.remove("drag-over");
-      const toIndex = Number(el.dataset.index);
-      if (dragPageIndex === null || dragPageIndex === toIndex) return;
-      const moved = scannedImages.splice(dragPageIndex, 1)[0];
-      scannedImages.splice(toIndex, 0, moved);
-      dragPageIndex = null;
-      renderScanPreviews();
+      const y = (e.changedTouches[0] || {}).clientY;
+      const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
+      let toIndex = null;
+      for (const item of items) {
+        item.classList.remove("drag-over");
+        const rect = item.getBoundingClientRect();
+        if (y >= rect.top && y <= rect.bottom) {
+          toIndex = Number(item.dataset.index);
+          break;
+        }
+      }
+      if (toIndex !== null && toIndex !== touchDragIndex) {
+        const moved = scannedImages.splice(touchDragIndex, 1)[0];
+        scannedImages.splice(toIndex, 0, moved);
+        renderScanPreviews();
+      }
+      touchDragIndex = null;
     });
   });
   const addMore = document.getElementById("addMorePages");
