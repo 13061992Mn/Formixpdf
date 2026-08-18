@@ -558,6 +558,10 @@ body {
   color: #888;
   margin-left: 8px;
 }
+.scan-preview-item.dragging,
+.scan-preview-item.reorder-selected {
+  touch-action: none;
+}
 .scan-preview-item.expanded {
   display: flex;
   flex-direction: column;
