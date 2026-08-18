@@ -477,11 +477,12 @@ async function renderScanPreviews() {
       }
       e.preventDefault();
       const y = e.touches[0].clientY;
+      const x = e.touches[0].clientX;
       const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
       items.forEach((item) => item.classList.remove("drag-over"));
       for (const item of items) {
         const rect = item.getBoundingClientRect();
-        if (y >= rect.top && y <= rect.bottom) {
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
           item.classList.add("drag-over");
           break;
         }
@@ -492,13 +493,15 @@ async function renderScanPreviews() {
       clearTimer();
       el.classList.remove("dragging");
       if (isDraggingPage && touchDragIndex !== null) {
-        const y = (e.changedTouches[0] || {}).clientY;
-        const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
-        let toIndex = null;
-        for (const item of items) {
-          item.classList.remove("drag-over");
-          const rect = item.getBoundingClientRect();
-          if (y >= rect.top && y <= rect.bottom) {
+            const t = e.changedTouches[0] || {};
+      const y = t.clientY;
+      const x = t.clientX;
+      const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
+      let toIndex = null;
+      for (const item of items) {
+        item.classList.remove("drag-over");
+        const rect = item.getBoundingClientRect();
+        if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
             toIndex = Number(item.dataset.index);
             break;
           }
