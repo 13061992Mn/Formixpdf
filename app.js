@@ -439,7 +439,7 @@ async function renderScanPreviews() {
       </div>
       <div class="page-order-row">
         <button type="button" class="page-order-btn edit-page-btn" data-index="${index}">Edit · Crop · Filter</button>
-        <span class="drag-hint">Hold & drag to reorder</span>
+        <span class="drag-hint">Hold, then drag to reorder</span>
       </div>
     `;
         scanPreviews.appendChild(div);
