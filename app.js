@@ -444,20 +444,31 @@ async function renderScanPreviews() {
     `;
         scanPreviews.appendChild(div);
   }
-    // Touch drag to reorder (works on iPhone)
+      // Touch drag to reorder (scroll only locks while dragging)
   let touchDragIndex = null;
+  let touchStartY = 0;
+  let isDraggingPage = false;
 
   scanPreviews.querySelectorAll(".scan-preview-item").forEach((el) => {
     el.addEventListener("touchstart", (e) => {
       if (e.target.closest("button")) return;
       touchDragIndex = Number(el.dataset.index);
-      el.classList.add("dragging");
+      touchStartY = e.touches[0].clientY;
+      isDraggingPage = false;
     }, { passive: true });
 
-        el.addEventListener("touchmove", (e) => {
+    el.addEventListener("touchmove", (e) => {
       if (touchDragIndex === null) return;
-      e.preventDefault(); // stop the screen from scrolling
       const y = e.touches[0].clientY;
+      const dy = Math.abs(y - touchStartY);
+
+      // Only start drag after moving ~12px (allows normal scroll otherwise)
+      if (!isDraggingPage && dy < 12) return;
+
+      isDraggingPage = true;
+      e.preventDefault();
+      el.classList.add("dragging");
+
       const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
       items.forEach((item) => item.classList.remove("drag-over"));
       for (const item of items) {
@@ -472,23 +483,28 @@ async function renderScanPreviews() {
     el.addEventListener("touchend", (e) => {
       if (touchDragIndex === null) return;
       el.classList.remove("dragging");
-      const y = (e.changedTouches[0] || {}).clientY;
-      const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
-      let toIndex = null;
-      for (const item of items) {
-        item.classList.remove("drag-over");
-        const rect = item.getBoundingClientRect();
-        if (y >= rect.top && y <= rect.bottom) {
-          toIndex = Number(item.dataset.index);
-          break;
+
+      if (isDraggingPage) {
+        const y = (e.changedTouches[0] || {}).clientY;
+        const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
+        let toIndex = null;
+        for (const item of items) {
+          item.classList.remove("drag-over");
+          const rect = item.getBoundingClientRect();
+          if (y >= rect.top && y <= rect.bottom) {
+            toIndex = Number(item.dataset.index);
+            break;
+          }
+        }
+        if (toIndex !== null && toIndex !== touchDragIndex) {
+          const moved = scannedImages.splice(touchDragIndex, 1)[0];
+          scannedImages.splice(toIndex, 0, moved);
+          renderScanPreviews();
         }
       }
-      if (toIndex !== null && toIndex !== touchDragIndex) {
-        const moved = scannedImages.splice(touchDragIndex, 1)[0];
-        scannedImages.splice(toIndex, 0, moved);
-        renderScanPreviews();
-      }
+
       touchDragIndex = null;
+      isDraggingPage = false;
     });
   });
   const addMore = document.getElementById("addMorePages");
