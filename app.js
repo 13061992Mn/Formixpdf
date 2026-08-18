@@ -444,31 +444,39 @@ async function renderScanPreviews() {
     `;
         scanPreviews.appendChild(div);
   }
-      // Touch drag to reorder (scroll only locks while dragging)
+        // Long-press to start drag, then move (iPhone-friendly)
   let touchDragIndex = null;
-  let touchStartY = 0;
+  let longPressTimer = null;
   let isDraggingPage = false;
 
   scanPreviews.querySelectorAll(".scan-preview-item").forEach((el) => {
+    const clearTimer = () => {
+      if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
     el.addEventListener("touchstart", (e) => {
       if (e.target.closest("button")) return;
-      touchDragIndex = Number(el.dataset.index);
-      touchStartY = e.touches[0].clientY;
+      clearTimer();
       isDraggingPage = false;
+      touchDragIndex = Number(el.dataset.index);
+      longPressTimer = setTimeout(() => {
+        isDraggingPage = true;
+        el.classList.add("dragging");
+        if (navigator.vibrate) navigator.vibrate(25);
+      }, 400);
     }, { passive: true });
 
     el.addEventListener("touchmove", (e) => {
-      if (touchDragIndex === null) return;
-      const y = e.touches[0].clientY;
-      const dy = Math.abs(y - touchStartY);
-
-      // Only start drag after moving ~12px (allows normal scroll otherwise)
-      if (!isDraggingPage && dy < 12) return;
-
-      isDraggingPage = true;
+      if (!isDraggingPage) {
+        clearTimer(); // user is scrolling → cancel long-press
+        touchDragIndex = null;
+        return;
+      }
       e.preventDefault();
-      el.classList.add("dragging");
-
+      const y = e.touches[0].clientY;
       const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
       items.forEach((item) => item.classList.remove("drag-over"));
       for (const item of items) {
@@ -481,10 +489,9 @@ async function renderScanPreviews() {
     }, { passive: false });
 
     el.addEventListener("touchend", (e) => {
-      if (touchDragIndex === null) return;
+      clearTimer();
       el.classList.remove("dragging");
-
-      if (isDraggingPage) {
+      if (isDraggingPage && touchDragIndex !== null) {
         const y = (e.changedTouches[0] || {}).clientY;
         const items = [...scanPreviews.querySelectorAll(".scan-preview-item")];
         let toIndex = null;
@@ -502,7 +509,6 @@ async function renderScanPreviews() {
           renderScanPreviews();
         }
       }
-
       touchDragIndex = null;
       isDraggingPage = false;
     });
