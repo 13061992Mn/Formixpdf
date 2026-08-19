@@ -1438,7 +1438,19 @@ function renderHistory() {
   if (!listEl) return;
   const list = getHistory();
   if (list.length === 0) {
-    listEl.innerHTML = '<div class="history-empty">No documents yet. Scan or create an invoice to see them here.</div>';
+        listEl.innerHTML = `
+  <div class="history-empty">
+    <div class="empty-icon">📁</div>
+    <div class="empty-title">No documents yet</div>
+    <div class="empty-text">Scan a document or create an invoice and it will show up here.</div>
+    <button type="button" class="btn-primary" id="emptyGoScanBtn" style="margin-top:16px;">Scan a document</button>
+  </div>`;
+    document.getElementById("emptyGoScanBtn")?.addEventListener("click", () => {
+      currentTemplate = "scan";
+      editingHistoryId = null;
+      if (createScanPdfBtn) createScanPdfBtn.textContent = "Create PDF from Scans";
+      showScreen("scanScreen");
+    });
     if (clearBtn) clearBtn.style.display = "none";
     return;
   }
