@@ -132,7 +132,55 @@ const templateTitles = {
   ai: "AI Tools",
   scan: "Scan Document"
 };
+ function updateFormForTemplate(type) {
+  const numLabel = document.querySelector('label[for="invoiceNumber"]') ||
+    document.querySelector(".form-row .form-group label");
+  const labels = document.querySelectorAll("#pdfForm label");
+  // Set by nearby input ids
+  const setLabelFor = (inputId, text) => {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const group = input.closest(".form-group");
+    const label = group && group.querySelector("label");
+    if (label && !label.classList.contains("checkbox-label")) label.textContent = text;
+  };
 
+  if (type === "quote") {
+    setLabelFor("invoiceNumber", "Quote #");
+    setLabelFor("dueDate", "Valid until");
+    setLabelFor("clientName", "Client / Customer");
+    setLabelFor("description", "Notes / Scope");
+    const inv = document.getElementById("invoiceNumber");
+    if (inv && (!inv.value || inv.value.startsWith("INV"))) inv.placeholder = "Q-1001";
+  } else if (type === "contract") {
+    setLabelFor("invoiceNumber", "Contract #");
+    setLabelFor("dueDate", "Effective / End date");
+    setLabelFor("clientName", "Client / Party");
+    setLabelFor("description", "Terms & Conditions");
+    const inv = document.getElementById("invoiceNumber");
+    if (inv) inv.placeholder = "C-1001";
+  } else if (type === "report") {
+    setLabelFor("invoiceNumber", "Report #");
+    setLabelFor("dueDate", "Period end (optional)");
+    setLabelFor("clientName", "Prepared for");
+    setLabelFor("description", "Report summary / body");
+    const inv = document.getElementById("invoiceNumber");
+    if (inv) inv.placeholder = "R-1001";
+  } else {
+    setLabelFor("invoiceNumber", "Invoice #");
+    setLabelFor("dueDate", "Due Date");
+    setLabelFor("clientName", "Client Name");
+    setLabelFor("description", "Notes / Payment Terms");
+    const inv = document.getElementById("invoiceNumber");
+    if (inv) inv.placeholder = "INV-1001";
+  }
+
+  const submitBtn = document.querySelector("#pdfForm button[type='submit']");
+  if (submitBtn) {
+    const names = { invoice: "Generate Invoice", quote: "Generate Quote", contract: "Generate Contract", report: "Generate Report" };
+    submitBtn.textContent = names[type] || "Generate PDF";
+  }
+} 
 // Show a specific screen
 function showScreen(screenId) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
@@ -161,6 +209,7 @@ document.querySelectorAll(".feature-card").forEach(card => {
     }
 
     formTitle.textContent = templateTitles[currentTemplate] || "Create Document";
+        updateFormForTemplate(currentTemplate);
     showScreen("formScreen");
   });
 });
@@ -1106,23 +1155,23 @@ function setDefaultDates() {
 
 // ========== PROFESSIONAL INVOICE PDF ==========
 
-function generateInvoicePDF() {
+function generateDocumentPDF() {
+  const type = currentTemplate || "invoice";
   const company = document.getElementById("companyName").value.trim() || "Your Company";
   const companyContact = document.getElementById("companyContact").value.trim();
   const companyAddress = document.getElementById("companyAddress").value.trim();
   const client = document.getElementById("clientName").value.trim() || "Client";
   const clientEmail = document.getElementById("clientEmail")?.value.trim() || "";
   const clientAddress = document.getElementById("clientAddress")?.value.trim() || "";
-  const invoiceNumber = document.getElementById("invoiceNumber").value.trim() || "INV-0001";
-  const invoiceDate = document.getElementById("invoiceDate").value || new Date().toISOString().split("T")[0];
+  const docNumber = document.getElementById("invoiceNumber").value.trim() || defaultDocNumber(type);
+  const docDate = document.getElementById("invoiceDate").value || new Date().toISOString().split("T")[0];
   const dueDate = document.getElementById("dueDate").value || "";
   const notes = document.getElementById("description").value.trim();
   const taxRate = parseFloat(document.getElementById("taxRate").value) || 0;
   const discount = parseFloat(document.getElementById("discount").value) || 0;
 
-  // Collect line items
   const items = [];
-  document.querySelectorAll(".line-item").forEach(row => {
+  document.querySelectorAll(".line-item").forEach((row) => {
     const desc = row.querySelector(".item-desc").value.trim();
     const qty = parseFloat(row.querySelector(".item-qty").value) || 0;
     const price = parseFloat(row.querySelector(".item-price").value) || 0;
@@ -1135,16 +1184,16 @@ function generateInvoicePDF() {
   const taxAmount = subtotal * (taxRate / 100);
   const total = Math.max(0, subtotal + taxAmount - discount);
 
+  const meta = getDocMeta(type);
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 20;
   let y = 22;
 
-  // Header bar
+  // Header
   doc.setFillColor(17, 17, 17);
   doc.rect(0, 0, pageWidth, 48, "F");
 
-  // Logo (if uploaded)
   let titleX = margin;
   if (companyLogoDataUrl) {
     try {
@@ -1159,26 +1208,26 @@ function generateInvoicePDF() {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
-  doc.text("INVOICE", titleX, 24);
+  doc.text(meta.title, titleX, 24);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(invoiceNumber, pageWidth - margin, 18, { align: "right" });
+  doc.text(docNumber, pageWidth - margin, 18, { align: "right" });
   doc.setFontSize(9);
-  doc.text("Date: " + formatDate(invoiceDate), pageWidth - margin, 26, { align: "right" });
+  doc.text("Date: " + formatDate(docDate), pageWidth - margin, 26, { align: "right" });
   if (dueDate) {
-    doc.text("Due: " + formatDate(dueDate), pageWidth - margin, 34, { align: "right" });
+    doc.text(meta.dateLabel + ": " + formatDate(dueDate), pageWidth - margin, 34, { align: "right" });
   }
 
   y = 60;
   doc.setTextColor(0);
 
-  // From / To columns
+  // From / To
   doc.setFontSize(9);
   doc.setTextColor(120);
   doc.setFont("helvetica", "bold");
   doc.text("FROM", margin, y);
-  doc.text("BILL TO", pageWidth / 2 + 5, y);
+  doc.text(meta.partyLabel, pageWidth / 2 + 5, y);
 
   y += 7;
   doc.setTextColor(0);
@@ -1194,7 +1243,6 @@ function generateInvoicePDF() {
 
   let leftY = y;
   let rightY = y;
-
   if (companyContact) {
     doc.text(companyContact, margin, leftY);
     leftY += 5;
@@ -1203,7 +1251,6 @@ function generateInvoicePDF() {
     doc.text(clientEmail, pageWidth / 2 + 5, rightY);
     rightY += 5;
   }
-
   if (companyAddress) {
     const addrLines = doc.splitTextToSize(companyAddress, 80);
     doc.text(addrLines, margin, leftY);
@@ -1217,103 +1264,219 @@ function generateInvoicePDF() {
 
   y = Math.max(leftY, rightY, 95);
 
-  // Table header
-  doc.setFillColor(245, 245, 245);
-  doc.rect(margin, y - 5, pageWidth - margin * 2, 10, "F");
-
-  doc.setTextColor(80);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.text("DESCRIPTION", margin + 2, y + 2);
-  doc.text("QTY", 125, y + 2);
-  doc.text("PRICE", 145, y + 2);
-  doc.text("AMOUNT", pageWidth - margin - 2, y + 2, { align: "right" });
-
-  y += 12;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(0);
-  doc.setFontSize(10);
-
-  if (items.length === 0) {
-    doc.setTextColor(150);
-    doc.text("No items added", margin + 2, y);
-    y += 10;
-  } else {
-    items.forEach((item, idx) => {
-      if (y > 250) {
-        doc.addPage();
-        y = 30;
-      }
-      const descLines = doc.splitTextToSize(item.desc, 95);
-      doc.text(descLines, margin + 2, y);
-      doc.text(String(item.qty), 125, y);
-      doc.text("$" + item.price.toFixed(2), 145, y);
-      doc.text("$" + item.total.toFixed(2), pageWidth - margin - 2, y, { align: "right" });
-      y += Math.max(8, descLines.length * 5 + 3);
-
-      // light separator
-      doc.setDrawColor(230);
-      doc.line(margin, y - 2, pageWidth - margin, y - 2);
-    });
-  }
-
-  y += 8;
-
-  // Totals
-  const totalsX = 130;
-  doc.setFontSize(10);
-  doc.setTextColor(60);
-  doc.text("Subtotal", totalsX, y);
-  doc.text("$" + subtotal.toFixed(2), pageWidth - margin, y, { align: "right" });
-  y += 7;
-
-  if (taxRate > 0) {
-    doc.text(`Tax (${taxRate}%)`, totalsX, y);
-    doc.text("$" + taxAmount.toFixed(2), pageWidth - margin, y, { align: "right" });
-    y += 7;
-  }
-
-  if (discount > 0) {
-    doc.text("Discount", totalsX, y);
-    doc.text("-$" + discount.toFixed(2), pageWidth - margin, y, { align: "right" });
-    y += 7;
-  }
-
-  // Total line
-  doc.setDrawColor(17, 17, 17);
-  doc.setLineWidth(0.6);
-  doc.line(totalsX - 5, y - 2, pageWidth - margin, y - 2);
-
-  y += 6;
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(0);
-  doc.text("TOTAL", totalsX, y);
-  doc.text("$" + total.toFixed(2), pageWidth - margin, y, { align: "right" });
-
-  // Notes
-  if (notes) {
-    y += 18;
+  // REPORT: notes as main body first
+  if (type === "report" && notes) {
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(120);
-    doc.text("NOTES / TERMS", margin, y);
+    doc.text("SUMMARY", margin, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(40);
+    const bodyLines = doc.splitTextToSize(notes, pageWidth - margin * 2);
+    doc.text(bodyLines, margin, y);
+    y += bodyLines.length * 5 + 10;
+  }
+
+  // Line items (skip empty for pure report if no items)
+  const showItems = items.length > 0 || type !== "report";
+  if (showItems) {
+    doc.setFillColor(245, 245, 245);
+    doc.rect(margin, y - 5, pageWidth - margin * 2, 10, "F");
+    doc.setTextColor(80);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text(type === "contract" ? "SCOPE / ITEMS" : "DESCRIPTION", margin + 2, y + 2);
+    doc.text("QTY", 125, y + 2);
+    doc.text("PRICE", 145, y + 2);
+    doc.text("AMOUNT", pageWidth - margin - 2, y + 2, { align: "right" });
+
+    y += 12;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(0);
+    doc.setFontSize(10);
+
+    if (items.length === 0) {
+      doc.setTextColor(150);
+      doc.text(type === "report" ? "No data rows" : "No items added", margin + 2, y);
+      y += 10;
+    } else {
+      items.forEach((item) => {
+        if (y > 250) {
+          doc.addPage();
+          y = 30;
+        }
+        const descLines = doc.splitTextToSize(item.desc, 95);
+        doc.text(descLines, margin + 2, y);
+        doc.text(String(item.qty), 125, y);
+        doc.text("$" + item.price.toFixed(2), 145, y);
+        doc.text("$" + item.total.toFixed(2), pageWidth - margin - 2, y, { align: "right" });
+        y += Math.max(8, descLines.length * 5 + 3);
+        doc.setDrawColor(230);
+        doc.line(margin, y - 2, pageWidth - margin, y - 2);
+      });
+    }
+
+    y += 8;
+    const totalsX = 130;
+    doc.setFontSize(10);
+    doc.setTextColor(60);
+    doc.text("Subtotal", totalsX, y);
+    doc.text("$" + subtotal.toFixed(2), pageWidth - margin, y, { align: "right" });
+    y += 7;
+    if (taxRate > 0) {
+      doc.text(`Tax (${taxRate}%)`, totalsX, y);
+      doc.text("$" + taxAmount.toFixed(2), pageWidth - margin, y, { align: "right" });
+      y += 7;
+    }
+    if (discount > 0) {
+      doc.text("Discount", totalsX, y);
+      doc.text("-$" + discount.toFixed(2), pageWidth - margin, y, { align: "right" });
+      y += 7;
+    }
+    doc.setDrawColor(17, 17, 17);
+    doc.setLineWidth(0.6);
+    doc.line(totalsX - 5, y - 2, pageWidth - margin, y - 2);
+    y += 6;
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0);
+    doc.text(meta.totalLabel, totalsX, y);
+    doc.text("$" + total.toFixed(2), pageWidth - margin, y, { align: "right" });
+  }
+
+  // Notes / terms (not already used as report body)
+  if (notes && type !== "report") {
+    y += 16;
+    if (y > 250) {
+      doc.addPage();
+      y = 30;
+    }
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(120);
+    doc.text(meta.notesLabel, margin, y);
     y += 6;
     doc.setFont("helvetica", "normal");
     doc.setTextColor(60);
     const noteLines = doc.splitTextToSize(notes, pageWidth - margin * 2);
     doc.text(noteLines, margin, y);
+    y += noteLines.length * 5 + 4;
   }
 
-  // Footer
+  // Default terms if empty
+  if (!notes && meta.defaultTerms) {
+    y += 14;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(120);
+    doc.text(meta.notesLabel, margin, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60);
+    const t = doc.splitTextToSize(meta.defaultTerms, pageWidth - margin * 2);
+    doc.text(t, margin, y);
+    y += t.length * 5 + 4;
+  }
+
+  // Contract signatures
+  if (type === "contract") {
+    y += 20;
+    if (y > 240) {
+      doc.addPage();
+      y = 40;
+    }
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(120);
+    doc.text("SIGNATURES", margin, y);
+    y += 14;
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.4);
+    doc.line(margin, y, margin + 70, y);
+    doc.line(pageWidth / 2 + 5, y, pageWidth - margin, y);
+    y += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(60);
+    doc.setFontSize(8);
+    doc.text("Provider / Company", margin, y);
+    doc.text("Client", pageWidth / 2 + 5, y);
+    y += 12;
+    doc.line(margin, y, margin + 70, y);
+    doc.line(pageWidth / 2 + 5, y, pageWidth - margin, y);
+    y += 5;
+    doc.text("Date", margin, y);
+    doc.text("Date", pageWidth / 2 + 5, y);
+  }
+
+  // Quote accept line
+  if (type === "quote") {
+    y += 16;
+    if (y > 260) {
+      doc.addPage();
+      y = 40;
+    }
+    doc.setFontSize(9);
+    doc.setTextColor(60);
+    doc.text("Client acceptance (optional): _____________________  Date: __________", margin, y);
+  }
+
   doc.setFontSize(8);
   doc.setTextColor(160);
-  doc.text("Generated with Formix PDF", margin, 285);
+  doc.text("Generated with Formix PDF · " + meta.title, margin, 285);
   doc.text(company, pageWidth - margin, 285, { align: "right" });
 
   return doc;
 }
 
+function getDocMeta(type) {
+  if (type === "quote") {
+    return {
+      title: "QUOTE",
+      partyLabel: "PREPARED FOR",
+      dateLabel: "Valid until",
+      totalLabel: "ESTIMATE TOTAL",
+      notesLabel: "NOTES / SCOPE",
+      defaultTerms: "This quote is an estimate and is valid for the period shown. Prices may change after the valid-until date."
+    };
+  }
+  if (type === "contract") {
+    return {
+      title: "CONTRACT",
+      partyLabel: "CLIENT / PARTY",
+      dateLabel: "Effective",
+      totalLabel: "CONTRACT VALUE",
+      notesLabel: "TERMS & CONDITIONS",
+      defaultTerms: "Both parties agree to the scope and terms above. Work begins upon signature. Changes must be agreed in writing."
+    };
+  }
+  if (type === "report") {
+    return {
+      title: "REPORT",
+      partyLabel: "PREPARED FOR",
+      dateLabel: "Period end",
+      totalLabel: "TOTAL",
+      notesLabel: "NOTES",
+      defaultTerms: ""
+    };
+  }
+  return {
+    title: "INVOICE",
+    partyLabel: "BILL TO",
+    dateLabel: "Due",
+    totalLabel: "TOTAL DUE",
+    notesLabel: "NOTES / PAYMENT TERMS",
+    defaultTerms: "Payment is due by the due date. Please include the invoice number with your payment."
+  };
+}
+
+function defaultDocNumber(type) {
+  const n = Date.now().toString().slice(-4);
+  if (type === "quote") return "Q-" + n;
+  if (type === "contract") return "C-" + n;
+  if (type === "report") return "R-" + n;
+  return "INV-" + n;
+}
 function formatDate(iso) {
   if (!iso) return "";
   const d = new Date(iso + "T00:00:00");
@@ -1663,7 +1826,7 @@ pdfForm.addEventListener("submit", (e) => {
       }
     }
 
-    const doc = generateInvoicePDF();
+    const doc = generateDocumentPDF();
     if (!doc) {
       alert("Could not create PDF. Please try again.");
       return;
