@@ -150,6 +150,7 @@ const templateTitles = {
     setLabelFor("dueDate", "Valid until");
     setLabelFor("clientName", "Client / Customer");
     setLabelFor("description", "Notes / Scope");
+        setLabelFor("customerSelect", "Prepared for (client)");
     const inv = document.getElementById("invoiceNumber");
     if (inv && (!inv.value || inv.value.startsWith("INV"))) inv.placeholder = "Q-1001";
   } else if (type === "contract") {
@@ -157,6 +158,9 @@ const templateTitles = {
     setLabelFor("dueDate", "Effective / End date");
     setLabelFor("clientName", "Client / Party");
     setLabelFor("description", "Terms & Conditions");
+        setLabelFor("customerSelect", "Other party");
+    const notes = document.getElementById("description");
+    if (notes) notes.placeholder = "Scope, payment terms, start date, responsibilities…";
     const inv = document.getElementById("invoiceNumber");
     if (inv) inv.placeholder = "C-1001";
   } else if (type === "report") {
@@ -164,6 +168,7 @@ const templateTitles = {
     setLabelFor("dueDate", "Period end (optional)");
     setLabelFor("clientName", "Prepared for");
     setLabelFor("description", "Report summary / body");
+        setLabelFor("customerSelect", "Prepared for");
     const inv = document.getElementById("invoiceNumber");
     if (inv) inv.placeholder = "R-1001";
   } else {
@@ -171,6 +176,7 @@ const templateTitles = {
     setLabelFor("dueDate", "Due Date");
     setLabelFor("clientName", "Client Name");
     setLabelFor("description", "Notes / Payment Terms");
+        setLabelFor("customerSelect", "Bill To (Client)");
     const inv = document.getElementById("invoiceNumber");
     if (inv) inv.placeholder = "INV-1001";
   }
@@ -1138,10 +1144,9 @@ function setDefaultDates() {
     due.setDate(due.getDate() + 15);
     dueInput.value = due.toISOString().split("T")[0];
   }
-  // Auto invoice number
-  const invNum = document.getElementById("invoiceNumber");
-  if (invNum && !invNum.value) {
-    invNum.value = "INV-" + Math.floor(1000 + Math.random() * 9000);
+    const invNum = document.getElementById("invoiceNumber");
+  if (invNum && (!invNum.value || invNum.value.startsWith("INV-") && currentTemplate !== "invoice")) {
+    invNum.value = defaultDocNumber(currentTemplate || "invoice");
   }
   // Prefill from Account preferences
   try {
