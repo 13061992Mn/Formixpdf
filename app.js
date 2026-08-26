@@ -72,6 +72,36 @@ async function idbDeletePages(id) {
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B67sN5P8ggYfrYe0PcfK00";
 const STRIPE_CUSTOMER_PORTAL_LINK = "https://billing.stripe.com/p/login/9B67sN5P8ggYfrYe0PcfK00";
 const PLAY_BILLING_PRODUCT_ID = "formix_pro_monthly";
+async function startSubscription() {
+  // Try Google Play Billing first (only works inside the Android TWA)
+  if (window.getDigitalGoodsService) {
+    try {
+      const service = await window.getDigitalGoodsService("https://play.google.com/billing");
+      const details = await service.getDetails([PLAY_BILLING_PRODUCT_ID]);
+      
+      if (details && details.length > 0) {
+        // Launch the Play Billing purchase flow
+        const paymentMethod = [{
+          supportedMethods: "https://play.google.com/billing",
+          data: { sku: PLAY_BILLING_PRODUCT_ID }
+        }];
+        
+        const request = new PaymentRequest(paymentMethod);
+        const paymentResponse = await request.show();
+        await paymentResponse.complete("success");
+        
+        // After successful purchase we should refresh the subscription status
+        alert("Subscription successful! Please restart the app.");
+        return;
+      }
+    } catch (err) {
+      console.log("Play Billing not available or failed, falling back to Stripe", err);
+    }
+  }
+  
+  // Fallback to Stripe (website or if Play Billing fails)
+  goToStripeCheckout();
+}
 // ========== SUPABASE ==========
 const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
@@ -2355,10 +2385,10 @@ if (subscribeBtn) {
       document.querySelector('.nav-item[data-screen="account"]')?.classList.add("active");
       updateAccountUI();
     } else if (currentUser) {
-      goToStripeCheckout();
-    } else {
-      signInWithGoogle();
-    }
+  startSubscription();          // new function that chooses Play Billing or Stripe
+} else {
+  signInWithGoogle();
+}
   });
 }
 
