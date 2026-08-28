@@ -73,11 +73,14 @@ const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B67sN5P8ggYfrYe0PcfK00";
 const STRIPE_CUSTOMER_PORTAL_LINK = "https://billing.stripe.com/p/login/9B67sN5P8ggYfrYe0PcfK00";
 const PLAY_BILLING_PRODUCT_ID = "formix_pro_monthly";
 function isAndroidApp() {
-  const standalone = window.matchMedia("(display-mode: standalone)").matches
-    || window.matchMedia("(display-mode: fullscreen)").matches
-    || window.navigator.standalone === true;
-  const android = /Android/i.test(navigator.userAgent);
-  return !!(window.getDigitalGoodsService || (android && standalone));
+  const ua = navigator.userAgent || "";
+  const android = /Android/i.test(ua);
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
+    window.matchMedia("(display-mode: minimal-ui)").matches;
+  const twa = /android-app:\/\//.test(document.referrer || "");
+  return !!(window.getDigitalGoodsService || twa || (android && standalone));
 }
 
 async function startSubscription() {
