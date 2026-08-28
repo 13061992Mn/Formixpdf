@@ -2269,7 +2269,10 @@ function goToStripeCheckout() {
     signInWithGoogle();
     return;
   }
-
+  if (window.getDigitalGoodsService) {
+    startSubscription();
+    return;
+  }
   if (!STRIPE_PAYMENT_LINK) {
     alert("Stripe Payment Link is not configured yet.");
     return;
@@ -2281,6 +2284,13 @@ function goToStripeCheckout() {
 }
 
 function goToCustomerPortal() {
+  // Android TWA → Google Play Billing / Play subscriptions
+  if (window.getDigitalGoodsService) {
+    startSubscription();
+    return;
+  }
+
+  // Website / iPhone → Stripe
   if (STRIPE_CUSTOMER_PORTAL_LINK) {
     window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
   } else {
