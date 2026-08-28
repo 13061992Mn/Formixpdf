@@ -82,7 +82,6 @@ function isAndroidApp() {
   const twa = /android-app:\/\//.test(document.referrer || "");
   return !!(window.getDigitalGoodsService || twa || (android && standalone));
 }
-
 async function startSubscription() {
   if (isAndroidApp()) {
     try {
