@@ -72,34 +72,42 @@ async function idbDeletePages(id) {
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B67sN5P8ggYfrYe0PcfK00";
 const STRIPE_CUSTOMER_PORTAL_LINK = "https://billing.stripe.com/p/login/9B67sN5P8ggYfrYe0PcfK00";
 const PLAY_BILLING_PRODUCT_ID = "formix_pro_monthly";
+function isAndroidApp() {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches
+    || window.matchMedia("(display-mode: fullscreen)").matches
+    || window.navigator.standalone === true;
+  const android = /Android/i.test(navigator.userAgent);
+  return !!(window.getDigitalGoodsService || (android && standalone));
+}
+
 async function startSubscription() {
-  // Try Google Play Billing first (only works inside the Android TWA)
-  if (window.getDigitalGoodsService) {
+  if (isAndroidApp()) {
     try {
-      const service = await window.getDigitalGoodsService("https://play.google.com/billing");
-      const details = await service.getDetails([PLAY_BILLING_PRODUCT_ID]);
-      
-      if (details && details.length > 0) {
-        // Launch the Play Billing purchase flow
-        const paymentMethod = [{
-          supportedMethods: "https://play.google.com/billing",
-          data: { sku: PLAY_BILLING_PRODUCT_ID }
-        }];
-        
-        const request = new PaymentRequest(paymentMethod);
-        const paymentResponse = await request.show();
-        await paymentResponse.complete("success");
-        
-        // After successful purchase we should refresh the subscription status
-        alert("Subscription successful! Please restart the app.");
-        return;
+      if (window.getDigitalGoodsService) {
+        const service = await window.getDigitalGoodsService("https://play.google.com/billing");
+        const details = await service.getDetails([PLAY_BILLING_PRODUCT_ID]);
+        if (details && details.length > 0) {
+          const paymentMethod = [{
+            supportedMethods: "https://play.google.com/billing",
+            data: { sku: PLAY_BILLING_PRODUCT_ID }
+          }];
+          const request = new PaymentRequest(paymentMethod);
+          const paymentResponse = await request.show();
+          await paymentResponse.complete("success");
+          alert("Subscription successful! Please restart the app.");
+          return;
+        }
       }
     } catch (err) {
-      console.log("Play Billing not available or failed, falling back to Stripe", err);
+      console.log("Play Billing error", err);
     }
+
+    // If Play Billing is not ready yet, do NOT open Stripe on Android
+    alert("Google Play Billing is not ready on this device yet. Please try again after the app update is fully processed.");
+    return;
   }
-  
-  // Fallback to Stripe (website or if Play Billing fails)
+
+  // Website / iPhone only
   goToStripeCheckout();
 }
 // ========== SUPABASE ==========
@@ -2285,7 +2293,7 @@ function goToStripeCheckout() {
 
 function goToCustomerPortal() {
   // Android TWA → Google Play Billing / Play subscriptions
-  if (window.getDigitalGoodsService) {
+  if (isAndroidApp()) {
     startSubscription();
     return;
   }
