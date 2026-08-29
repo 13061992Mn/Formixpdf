@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.formixpdf.app",
+      "sha256_cert_fingerprints": [
+        "1E:3C:FE:8E:DF:8C:5D:A0:00:EA:B6:63:89:38:4B:53:1D:63:94:2D:9F:93:BD:44:78:10:4B:E8:9C:F0:16:B1"
+      ]
+    }
+  }
+]
