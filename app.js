@@ -2357,15 +2357,10 @@ if (planEl) planEl.textContent = isTrial ? "Free Trial (3 days)" : "Pro · $5/mo
 
     if (btn) {
   btn.textContent = "Manage Subscription";
-  btn.onclick = () => {
-    if (STRIPE_CUSTOMER_PORTAL_LINK) {
-      window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
-    } else {
-      if (confirm("Open customer portal or log out?")) {
-        signOut();
-      }
+      if (btn) {
+      btn.textContent = "Manage Subscription";
+      btn.onclick = goToCustomerPortal;
     }
-  };
 }
   } else {
     badge.textContent = "Free";
@@ -2376,8 +2371,8 @@ if (planEl) planEl.textContent = isTrial ? "Free Trial (3 days)" : "Pro · $5/mo
     if (noteEl) noteEl.textContent = "Subscribe to unlock unlimited PDFs";
 
     if (btn) {
-      btn.textContent = "Subscribe — $5/mo";
-      btn.onclick = goToStripeCheckout;
+            btn.textContent = "Subscribe — $5/mo";
+      btn.onclick = startSubscription;
     }
   }
 
@@ -2385,7 +2380,7 @@ if (planEl) planEl.textContent = isTrial ? "Free Trial (3 days)" : "Pro · $5/mo
     homeBtn.textContent = isSubscribed() ? "Pro Active" : "Subscribe — $5/mo";
     homeBtn.onclick = isSubscribed()
       ? () => showScreen("accountScreen")
-      : goToStripeCheckout;
+            : startSubscription;
   }
 }
 
