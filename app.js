@@ -100,7 +100,7 @@ async function startSubscription() {
         window.location.href =
       "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
     return;
-  }
+  
 
   // Website / iPhone only
   goToStripeCheckout();
@@ -2291,7 +2291,7 @@ function goToCustomerPortal() {
       window.location.href =
       "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
     return;
-  }
+  
 
   // Website / iPhone → Stripe
   if (STRIPE_CUSTOMER_PORTAL_LINK) {
