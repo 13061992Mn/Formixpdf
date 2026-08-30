@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.formixpdf.app",
       "sha256_cert_fingerprints": [
-        "1E:3C:FE:8E:DF:8C:5D:A0:00:EA:B6:63:89:38:4B:53:1D:63:94:2D:9F:93:BD:44:78:10:4B:E8:9C:F0:16:B1"
+        "1E:3C:FE:8E:DF:8C:5D:A0:00:EA:B6:63:89:38:4B:53:1D:63:94:2D:9F:93:BD:44:78:10:4B:E8:9C:F0:16:B1",
+        "45:74:47:68:C1:85:CE:56:7B:96:54:95:D6:EB:92:23:26:E5:6A:D1:EF:3A:89:60:33:C1:1F:B2:74:A0:A0:AF"
       ]
     }
   }
