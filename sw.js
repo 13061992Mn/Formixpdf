@@ -1,5 +1,5 @@
 // Formix PDF - Service Worker
-const CACHE_NAME = "formix-pdf-v15";
+const CACHE_NAME = "formix-pdf-v17";
 const ASSETS = [
   "./",
   "./index.html",
