@@ -2287,20 +2287,18 @@ function goToStripeCheckout() {
 }
 
 function goToCustomerPortal() {
-  // Android TWA → Google Play Billing / Play subscriptions
-      window.location.href =
+  if (isAndroidApp()) {
+    window.location.href =
       "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
     return;
-  
+  }
 
-  // Website / iPhone → Stripe
   if (STRIPE_CUSTOMER_PORTAL_LINK) {
     window.location.href = STRIPE_CUSTOMER_PORTAL_LINK;
   } else {
     alert("Customer portal is not set up yet.");
   }
 }
-
 function handleCheckoutReturn() {
   const params = new URLSearchParams(window.location.search);
   if (params.get("checkout") === "success") {
