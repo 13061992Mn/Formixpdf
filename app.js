@@ -97,8 +97,8 @@ async function startSubscription() {
       console.log("Play Billing error", err);
     }
 
-    // If Play Billing is not ready yet, do NOT open Stripe on Android
-    alert("Google Play Billing is not ready on this device yet. Please try again after the app update is fully processed.");
+        window.location.href =
+      "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
     return;
   }
 
@@ -2288,8 +2288,8 @@ function goToStripeCheckout() {
 
 function goToCustomerPortal() {
   // Android TWA → Google Play Billing / Play subscriptions
-  if (isAndroidApp()) {
-    startSubscription();
+      window.location.href =
+      "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
     return;
   }
 
