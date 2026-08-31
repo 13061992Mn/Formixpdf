@@ -98,7 +98,7 @@ async function startSubscription() {
     }
 
         window.location.href =
-      "https://play.google.com/store/account/subscriptions?package=com.formixpdf.app&sku=formix_pro_monthly";
+      "https://play.google.com/store/apps/details?id=com.formixpdf.app";
     return;
     }
 
