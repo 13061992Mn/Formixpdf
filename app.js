@@ -102,9 +102,17 @@ async function startSubscription() {
     return;
     }
 
-  // Website / iPhone only
-  goToStripeCheckout();
-}
+      // iOS App Store IAP
+    if (window.__FORMIX_IOS || new URLSearchParams(location.search).get("platform") === "ios") {
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iap) {
+        window.webkit.messageHandlers.iap.postMessage("subscribe");
+        return;
+      }
+    }
+
+    // Website / Android web
+    goToStripeCheckout();
+  }
 // ========== SUPABASE ==========
 const SUPABASE_URL = "https://ccqbbvzeqfqbckacakqn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_jMl1GTjO8_pAOFWAZKmgPA_Vcc25PZk";
