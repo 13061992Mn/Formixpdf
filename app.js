@@ -76,6 +76,12 @@ function isAndroidApp() {
   return /Android/i.test(navigator.userAgent || "");
 }
 async function startSubscription() {
+    if (window.__FORMIX_IOS || new URLSearchParams(location.search).get("platform") === "ios") {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iap) {
+      window.webkit.messageHandlers.iap.postMessage("subscribe");
+      return;
+    }
+  }
   if (isAndroidApp()) {
     try {
       if (window.getDigitalGoodsService) {
@@ -123,6 +129,23 @@ const sb = window.supabase
 
 let currentUser = null;
 let realSubscription = null;
+document.addEventListener("click", function (e) {
+  if (!(window.__FORMIX_IOS || new URLSearchParams(location.search).get("platform") === "ios")) return;
+  const el = e.target.closest("a,button");
+  if (!el) return;
+  const href = ((el.getAttribute("href") || "") + " " + (el.dataset.href || "")).toLowerCase();
+  const text = (el.innerText || el.textContent || "").toLowerCase();
+  if (href.indexOf("stripe") === -1 && text.indexOf("manage subscription") === -1 && text.indexOf("subscribe") === -1) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (text.indexOf("manage") !== -1) {
+    window.location.href = "https://apps.apple.com/account/subscriptions";
+    return;
+  }
+  if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.iap) {
+    window.webkit.messageHandlers.iap.postMessage("subscribe");
+  }
+}, true);
 // DOM Elements
 const formTitle = document.getElementById("formTitle");
 const pdfForm = document.getElementById("pdfForm");
