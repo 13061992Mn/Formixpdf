@@ -2715,8 +2715,6 @@ function initAccountButtons() {
 }
 
 // Run after everything is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initAccountButtons);
-} else {
+setTimeout(function() {
   initAccountButtons();
-}
+}, 500);
