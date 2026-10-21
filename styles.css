@@ -1211,3 +1211,14 @@ body {
   touch-action: manipulation;
   -webkit-tap-highlight-color: rgba(0,0,0,0.1);
 }
+#app {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 1;
+}
+
+.header, .main, .screen {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
+}
