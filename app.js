@@ -2682,3 +2682,40 @@ if ("serviceWorker" in navigator) {
     });
   });
 }
+// Reliable account button handlers
+function initAccountButtons() {
+  const logoutBtn = document.getElementById("logoutBtn");
+  const clearDataBtn = document.getElementById("clearDataBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm("Are you sure you want to log out?")) {
+        signOut();
+      }
+    });
+  }
+
+  if (clearDataBtn) {
+    clearDataBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm("Clear all local data?\n\nThis removes your preferences and login status on this device.")) {
+        localStorage.removeItem(SUB_KEY);
+        localStorage.removeItem(PREFS_KEY);
+        companyLogoDataUrl = null;
+        updateAccountUI();
+        loadPrefs();
+        alert("Local data cleared.");
+      }
+    });
+  }
+}
+
+// Run after everything is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initAccountButtons);
+} else {
+  initAccountButtons();
+}
