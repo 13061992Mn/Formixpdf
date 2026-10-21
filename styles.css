@@ -105,7 +105,6 @@ body {
 
 .screen.active {
   display: block;
-  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
