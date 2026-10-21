@@ -2684,6 +2684,10 @@ if ("serviceWorker" in navigator) {
 }
 // Reliable account button handlers
 function initAccountButtons() {
+  alert("Account buttons script ran");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const clearDataBtn = document.getElementById("clearDataBtn");
+  ...
   const logoutBtn = document.getElementById("logoutBtn");
   const clearDataBtn = document.getElementById("clearDataBtn");
 
