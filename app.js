@@ -2687,9 +2687,6 @@ function initAccountButtons() {
   alert("Account buttons script ran");
   const logoutBtn = document.getElementById("logoutBtn");
   const clearDataBtn = document.getElementById("clearDataBtn");
-  ...
-  const logoutBtn = document.getElementById("logoutBtn");
-  const clearDataBtn = document.getElementById("clearDataBtn");
 
   if (logoutBtn) {
     logoutBtn.addEventListener("click", function (e) {
