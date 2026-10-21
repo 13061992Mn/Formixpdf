@@ -2650,6 +2650,7 @@ if (aiUseNotesBtn) {
 // Bottom navigation
 document.querySelectorAll(".nav-item").forEach((item) => {
   item.addEventListener("click", () => {
+        alert("Nav click works");
     document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
     item.classList.add("active");
 
