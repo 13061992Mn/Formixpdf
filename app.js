@@ -2650,8 +2650,7 @@ if (aiUseNotesBtn) {
 // Bottom navigation
 document.querySelectorAll(".nav-item").forEach((item) => {
   item.addEventListener("click", () => {
-        alert("Nav click works");
-    document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
+         document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
     item.classList.add("active");
 
     const screen = item.dataset.screen;
@@ -2685,7 +2684,6 @@ if ("serviceWorker" in navigator) {
 }
 // Reliable account button handlers
 function initAccountButtons() {
-  alert("Account buttons script ran");
   const logoutBtn = document.getElementById("logoutBtn");
   const clearDataBtn = document.getElementById("clearDataBtn");
 
