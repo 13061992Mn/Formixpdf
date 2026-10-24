@@ -141,12 +141,14 @@
             <input type="text" id="clientName" placeholder="Client or Company" required>
           </div>
           <div class="form-group">
-        <div class="form-group">
-          <label for="companySelect">Company</label>
-          <select id="companySelect" class="form-control">
-            <option value="">-- Select company --</option>
-          </select>
-        </div>
+            <label for="companySelect">Company</label>
+            <div class="customer-row">
+              <select id="companySelect" class="form-control">
+                <option value="">-- Select company --</option>
+              </select>
+              <button type="button" class="btn-icon-sm" id="manageCompaniesBtn" title="Manage companies">+</button>
+            </div>
+          </div>
           <div class="form-group">
             <label>Client Email</label>
             <input type="text" id="clientEmail" placeholder="client@email.com" inputmode="email" autocomplete="email">
