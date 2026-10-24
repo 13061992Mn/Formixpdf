@@ -2805,8 +2805,13 @@ function initCompanySelect() {
       localStorage.setItem(LAST_COMPANY_KEY, select.value);
     });
  }
- const btn = document.getElementById("manageCompaniesBtn");
- if (btn) btn.addEventListener("click", openCompanyManager);
+ document.addEventListener("click", function(e) {
+  const btn = e.target.closest("#manageCompaniesBtn");
+  if (btn) {
+    e.preventDefault();
+    openCompanyManager();
+  }
+});
 }
 
 if (document.readyState === "loading") {
