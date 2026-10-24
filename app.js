@@ -1671,6 +1671,7 @@ if (customerSelect) {
     }
   });
 }
+/*
 // ========== COMPANY SELECT ==========
 const companySelect = document.getElementById("companySelect");
 const saveCompanyCheck = document.getElementById("saveCompanyCheck");
@@ -1722,6 +1723,7 @@ if (invoiceNumberInput && invoiceNumberInput.value) {
 saveLastInvoiceNumber(invoiceNumberInput.value);
 }
 }
+/*
 if (manageCustomersBtn) {
   manageCustomersBtn.addEventListener("click", () => {
     const list = getCustomers();
