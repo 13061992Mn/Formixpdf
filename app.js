@@ -2717,3 +2717,48 @@ function initAccountButtons() {
 setTimeout(function() {
   initAccountButtons();
 }, 500);
+
+// ===== COMPANY SELECT (safe version) =====
+const COMPANIES_KEY = "formix_companies";
+const LAST_COMPANY_KEY = "formix_last_company";
+
+function getCompanies() {
+try {
+return JSON.parse(localStorage.getItem(COMPANIES_KEY) || "[]");
+} catch {
+return [];
+}
+}
+
+function saveCompanies(list) {
+localStorage.setItem(COMPANIES_KEY, JSON.stringify(list));
+}
+
+function initCompanySelect() {
+const select = document.getElementById("companySelect");
+if (!select) return;
+
+const companies = getCompanies();
+select.innerHTML = '<option value="">-- Select company --</option>';
+companies.forEach(c => {
+const opt = document.createElement("option");
+opt.value = c.id;
+opt.textContent = c.name;
+select.appendChild(opt);
+});
+
+const last = localStorage.getItem(LAST_COMPANY_KEY);
+if (last) select.value = last;
+
+select.addEventListener("change", () => {
+localStorage.setItem(LAST_COMPANY_KEY, select.value);
+});
+}
+
+// Run after page loads
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", initCompanySelect);
+} else {
+initCompanySelect();
+}
+// ===== END COMPANY SELECT =====
