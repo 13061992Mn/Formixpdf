@@ -14,8 +14,6 @@ let editingHistoryId = null;
 const SUB_KEY = "formix_subscription";
 const PREFS_KEY = "formix_prefs";
 const CUSTOMERS_KEY = "formix_customers";
-const COMPANIES_KEY = "formix_companies";
-const LAST_INVOICE_NUM_KEY = "formix_last_invoice_num";
 const HISTORY_KEY = "formix_history";
 const MAX_HISTORY = 500;
 const FIRST_OPEN_KEY = "formix_first_open";
@@ -1554,9 +1552,6 @@ function formatDate(iso) {
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
-const CUSTOMERS_KEY = "formix_customers";
-const COMPANIES_KEY = "formix_companies";
-const LAST_INVOICE_NUM_KEY = "formix_last_invoice_num";
 
 // ========== CUSTOMERS ==========
 function getCustomers() {
@@ -1613,52 +1608,7 @@ function addOrUpdateCustomer(name, email, address) {
   saveCustomers(list);
   renderCustomerSelect();
 }
-// ========== COMPANIES ==========
-function getCompanies() {
-try {
-return JSON.parse(localStorage.getItem(COMPANIES_KEY) || "[]");
-} catch {
-return [];
-}
-}
 
-function saveCompanies(list) {
-localStorage.setItem(COMPANIES_KEY, JSON.stringify(list));
-}
-
-function addOrUpdateCompany(name, contact, address) {
-if (!name) return;
-const list = getCompanies();
-const existing = list.find(c => c.name.toLowerCase() === name.toLowerCase());
-if (existing) {
-existing.contact = contact || existing.contact || "";
-existing.address = address || existing.address || "";
-existing.updated = new Date().toISOString();
-} else {
-list.unshift({
-id: "co_" + Date.now(),
-name,
-contact: contact || "",
-address: address || "",
-created: new Date().toISOString()
-});
-}
-if (list.length > 20) list.length = 20;
-saveCompanies(list);
-}
-
-function getNextInvoiceNumber() {
-const last = parseInt(localStorage.getItem(LAST_INVOICE_NUM_KEY) || "0", 10);
-const next = last + 1;
-return "INV-" + String(next).padStart(4, "0");
-}
-
-function saveLastInvoiceNumber(numStr) {
-const match = (numStr || "").match(/\d+/);
-if (match) {
-localStorage.setItem(LAST_INVOICE_NUM_KEY, match[0]);
-}
-}
 if (customerSelect) {
   customerSelect.addEventListener("change", () => {
     const id = customerSelect.value;
@@ -1671,6 +1621,7 @@ if (customerSelect) {
     }
   });
 }
+
 if (manageCustomersBtn) {
   manageCustomersBtn.addEventListener("click", () => {
     const list = getCustomers();
@@ -1944,8 +1895,7 @@ pdfForm.addEventListener("submit", (e) => {
         saveCustomerCheck.checked = false;
       }
     }
-// Save company + invoice number
-saveCompanyIfChecked();
+
     const doc = generateDocumentPDF();
     if (!doc) {
       alert("Could not create PDF. Please try again.");
