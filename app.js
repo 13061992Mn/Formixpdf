@@ -1669,7 +1669,57 @@ if (customerSelect) {
     }
   });
 }
+// ========== COMPANY SELECT ==========
+const companySelect = document.getElementById("companySelect");
+const saveCompanyCheck = document.getElementById("saveCompanyCheck");
 
+function renderCompanySelect() {
+if (!companySelect) return;
+const list = getCompanies();
+const currentVal = companySelect.value;
+companySelect.innerHTML = '<option value="">-- Select saved company --</option>';
+list.forEach(c => {
+const opt = document.createElement("option");
+opt.value = c.id;
+opt.textContent = c.name;
+companySelect.appendChild(opt);
+});
+if (currentVal) companySelect.value = currentVal;
+}
+
+if (companySelect) {
+companySelect.addEventListener("change", () => {
+const id = companySelect.value;
+if (!id) return;
+const c = getCompanies().find(x => x.id === id);
+if (c) {
+document.getElementById("companyName").value = c.name || "";
+document.getElementById("companyContact").value = c.contact || "";
+document.getElementById("companyAddress").value = c.address || "";
+}
+});
+renderCompanySelect();
+}
+
+// Auto-fill next invoice number
+const invoiceNumberInput = document.getElementById("invoiceNumber");
+if (invoiceNumberInput && !invoiceNumberInput.value) {
+invoiceNumberInput.value = getNextInvoiceNumber();
+}
+
+// Save company + invoice number when generating PDF
+// (add this inside the existing form submit / generate PDF function)
+function saveCompanyIfChecked() {
+if (saveCompanyCheck && saveCompanyCheck.checked) {
+const name = document.getElementById("companyName").value.trim();
+const contact = document.getElementById("companyContact").value.trim();
+const address = document.getElementById("companyAddress").value.trim();
+if (name) addOrUpdateCompany(name, contact, address);
+}
+if (invoiceNumberInput && invoiceNumberInput.value) {
+saveLastInvoiceNumber(invoiceNumberInput.value);
+}
+}
 if (manageCustomersBtn) {
   manageCustomersBtn.addEventListener("click", () => {
     const list = getCustomers();
@@ -1943,7 +1993,8 @@ pdfForm.addEventListener("submit", (e) => {
         saveCustomerCheck.checked = false;
       }
     }
-
+// Save company + invoice number
+saveCompanyIfChecked();
     const doc = generateDocumentPDF();
     if (!doc) {
       alert("Could not create PDF. Please try again.");
