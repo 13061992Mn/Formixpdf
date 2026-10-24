@@ -2718,27 +2718,23 @@ setTimeout(function() {
   initAccountButtons();
 }, 500);
 
-// ===== COMPANY SELECT (safe version) =====
+// ===== COMPANY MANAGER =====
 const COMPANIES_KEY = "formix_companies";
 const LAST_COMPANY_KEY = "formix_last_company";
 
 function getCompanies() {
-try {
-return JSON.parse(localStorage.getItem(COMPANIES_KEY) || "[]");
-} catch {
-return [];
+try { return JSON.parse(localStorage.getItem(COMPANIES_KEY) || "[]"); }
+catch { return []; }
 }
-}
-
 function saveCompanies(list) {
 localStorage.setItem(COMPANIES_KEY, JSON.stringify(list));
 }
 
-function initCompanySelect() {
+function renderCompanySelect() {
 const select = document.getElementById("companySelect");
 if (!select) return;
-
 const companies = getCompanies();
+const current = select.value;
 select.innerHTML = '<option value="">-- Select company --</option>';
 companies.forEach(c => {
 const opt = document.createElement("option");
@@ -2746,19 +2742,76 @@ opt.value = c.id;
 opt.textContent = c.name;
 select.appendChild(opt);
 });
-
+if (current) select.value = current;
 const last = localStorage.getItem(LAST_COMPANY_KEY);
-if (last) select.value = last;
+if (last && !current) select.value = last;
+}
 
+function openCompanyManager() {
+const companies = getCompanies();
+let html = '<div style="padding:16px; max-width:400px;">';
+html += '<h3 style="margin-top:0;">Companies</h3>';
+html += '<div id="companyList" style="margin-bottom:12px;">';
+companies.forEach((c, i) => {
+html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;">
+<span>${c.name}</span>
+<button type="button" data-idx="${i}" class="del-company" style="color:red; border:none; background:none;">✕</button>
+</div>`;
+});
+html += '</div>';
+html += '<input id="newCompanyName" placeholder="New company name" style="width:100%; padding:8px; margin-bottom:8px;">';
+html += '<button type="button" id="addCompanyBtn" style="width:100%; padding:8px;">Add Company</button>';
+html += '<button type="button" id="closeCompanyModal" style="width:100%; margin-top:8px; padding:8px;">Close</button>';
+html += '</div>';
+
+const overlay = document.createElement("div");
+overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:10000; display:flex; align-items:center; justify-content:center;";
+overlay.innerHTML = html;
+document.body.appendChild(overlay);
+
+overlay.querySelector("#addCompanyBtn").onclick = () => {
+const name = overlay.querySelector("#newCompanyName").value.trim();
+if (!name) return;
+const list = getCompanies();
+list.push({ id: Date.now().toString(), name });
+saveCompanies(list);
+document.body.removeChild(overlay);
+openCompanyManager();
+renderCompanySelect();
+};
+
+overlay.querySelectorAll(".del-company").forEach(btn => {
+btn.onclick = () => {
+const idx = +btn.dataset.idx;
+const list = getCompanies();
+list.splice(idx, 1);
+saveCompanies(list);
+document.body.removeChild(overlay);
+openCompanyManager();
+renderCompanySelect();
+};
+});
+
+overlay.querySelector("#closeCompanyModal").onclick = () => {
+document.body.removeChild(overlay);
+};
+}
+
+function initCompanySelect() {
+renderCompanySelect();
+const select = document.getElementById("companySelect");
+if (select) {
 select.addEventListener("change", () => {
 localStorage.setItem(LAST_COMPANY_KEY, select.value);
 });
 }
+const btn = document.getElementById("manageCompaniesBtn");
+if (btn) btn.addEventListener("click", openCompanyManager);
+}
 
-// Run after page loads
 if (document.readyState === "loading") {
 document.addEventListener("DOMContentLoaded", initCompanySelect);
 } else {
 initCompanySelect();
 }
-// ===== END COMPANY SELECT =====
+// ===== END COMPANY MANAGER =====
