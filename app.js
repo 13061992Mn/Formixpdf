@@ -2748,62 +2748,66 @@ function renderCompanySelect() {
 }
 
 function openCompanyManager() {
+  const existing = document.getElementById("companyModalOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "companyModalOverlay";
+  overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99999; display:flex; align-items:center; justify-content:center;";
+  overlay.innerHTML = `
+    <div style="background:#fff; padding:16px; border-radius:12px; width:90%; max-width:340px; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 12px 0;">Companies</h3>
+      <div id="companyList" style="max-height:180px; overflow-y:auto; margin-bottom:12px;"></div>
+      <input id="newCompanyName" type="text" placeholder="Company name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <input id="newCompanyEmail" type="text" placeholder="Email / Phone" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <input id="newCompanyAddress" type="text" placeholder="Address" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <button type="button" id="addCompanyBtn" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff; margin-bottom:8px;">Add Company</button>
+      <button type="button" id="closeCompanyModal" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff;">Close</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const listDiv = overlay.querySelector("#companyList");
   const companies = getCompanies();
-  let html = '<div style="padding:16px; max-width:400px;">';
-  html += '<h3 style="margin-top:0;">Companies</h3>';
-  html += '<div id="companyList" style="margin-bottom:12px;">';
   companies.forEach((c, i) => {
-    html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee;">
-      <span>${c.name}</span>
-      <button type="button" data-idx="${i}" class="del-company" style="color:red; border:none; background:none;">✕</button>
-    </div>`;
-});
-html += '</div>';
-html += '<input id="newCompanyName" placeholder="New company name" style="width:100%; padding:8px; margin-bottom:8px;">';
-html += '<button type="button" id="addCompanyBtn" style="width:100%; padding:8px;">Add Company</button>';
-html += '<button type="button" id="closeCompanyModal" style="width:100%; margin-top:8px; padding:8px;">Close</button>';
-html += '</div>';
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #eee;";
+    row.innerHTML = `<span>${c.name}</span><button type="button" class="del-company" data-idx="${i}" style="background:none; border:none; color:#e55; font-size:18px;">×</button>`;
+    listDiv.appendChild(row);
+  });
 
-const overlay = document.createElement("div");
-overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:10000; display:flex; align-items:center; justify-content:center;";
-overlay.innerHTML = html;
-document.body.appendChild(overlay);
-
-overlay.querySelector("#addCompanyBtn").addEventListener("click", () => {
-  const input = overlay.querySelector("#newCompanyName");
-  const name = input ? input.value.trim() : "";
-  if (!name) {
-    alert("Please enter a company name");
-    return;
-  }
-  const list = getCompanies();
-  if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-    list.push({ name, address: "", email: "", phone: "" });
-    saveCompanies(list);
-    renderCompanySelect();
-  }
-  document.body.removeChild(overlay);
-  renderCompanySelect();
-  openCompanyManager(); // reopen so you see the new company
-});
-
-overlay.querySelectorAll(".del-company").forEach(btn => {
-  btn.onclick = () => {
-    const idx = +btn.dataset.idx;
+  overlay.querySelector("#addCompanyBtn").onclick = () => {
+    const name = overlay.querySelector("#newCompanyName").value.trim();
+    if (!name) return alert("Enter a company name");
     const list = getCompanies();
-    list.splice(idx, 1);
-    saveCompanies(list);
-    document.body.removeChild(overlay);
-    openCompanyManager();
+    if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+      list.push({
+        name,
+        email: overlay.querySelector("#newCompanyEmail").value.trim(),
+        address: overlay.querySelector("#newCompanyAddress").value.trim(),
+        phone: ""
+      });
+      saveCompanies(list);
+    }
+    overlay.remove();
     renderCompanySelect();
+    openCompanyManager();
   };
-});
 
-overlay.querySelector("#closeCompanyModal").onclick = () => {
-  document.body.removeChild(overlay);
- };
+  overlay.querySelector("#closeCompanyModal").onclick = () => overlay.remove();
+
+  overlay.querySelectorAll(".del-company").forEach(btn => {
+    btn.onclick = () => {
+      const idx = +btn.dataset.idx;
+      const list = getCompanies();
+      list.splice(idx, 1);
+      saveCompanies(list);
+      overlay.remove();
+      renderCompanySelect();
+      openCompanyManager();
+    };
+  });
 }
-
 function initCompanySelect() {
   renderCompanySelect();
   const select = document.getElementById("companySelect");
