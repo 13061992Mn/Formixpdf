@@ -1945,7 +1945,7 @@ const formData = {
   dueDate: document.getElementById("dueDate")?.value || "",
   notes: document.getElementById("notes")?.value || "",
   items: Array.from(document.querySelectorAll(".line-item")).map(row => ({
-    description: row.querySelector(".item-desc")?.value || "",
+    desc: row.querySelector(".item-desc")?.value || "",
     qty: row.querySelector(".item-qty")?.value || "",
     price: row.querySelector(".item-price")?.value || ""
   }))
