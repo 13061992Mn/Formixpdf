@@ -2809,16 +2809,19 @@ function initCompanySelect() {
   const select = document.getElementById("companySelect");
   if (select) {
     select.addEventListener("change", () => {
-      localStorage.setItem(LAST_COMPANY_KEY, select.value);
+      const companies = getCompanies();
+      const idx = select.value;
+      localStorage.setItem(LAST_COMPANY_KEY, idx);
+      if (idx === "" || !companies[idx]) return;
+      const c = companies[idx];
+      const nameEl = document.getElementById("yourCompany") || document.querySelector("input[placeholder*='Company']");
+      const emailEl = document.getElementById("yourEmail") || document.querySelector("input[placeholder*='email']");
+      const addressEl = document.getElementById("yourAddress") || document.querySelector("input[placeholder*='Address']");
+      if (nameEl) nameEl.value = c.name || "";
+      if (emailEl) emailEl.value = c.email || "";
+      if (addressEl) addressEl.value = c.address || "";
     });
- }
- document.addEventListener("click", function(e) {
-  const btn = e.target.closest("#manageCompaniesBtn");
-  if (btn) {
-    e.preventDefault();
-    openCompanyManager();
   }
-});
 }
 
 if (document.readyState === "loading") {
