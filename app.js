@@ -2734,17 +2734,17 @@ function renderCompanySelect() {
   const select = document.getElementById("companySelect");
   if (!select) return;
   const companies = getCompanies();
-  const current = select.value;
   select.innerHTML = '<option value="">-- Select company --</option>';
-  companies.forEach(c => {
+  companies.forEach((c, i) => {
     const opt = document.createElement("option");
-    opt.value = c.id;
+    opt.value = i;
     opt.textContent = c.name;
     select.appendChild(opt);
-});
-if (current) select.value = current;
-const last = localStorage.getItem(LAST_COMPANY_KEY);
-if (last && !current) select.value = last;
+  });
+  const last = localStorage.getItem(LAST_COMPANY_KEY);
+  if (last !== null && companies[last]) {
+    select.value = last;
+  }
 }
 
 function openCompanyManager() {
@@ -2780,6 +2780,7 @@ overlay.querySelector("#addCompanyBtn").addEventListener("click", () => {
   if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
     list.push({ name, address: "", email: "", phone: "" });
     saveCompanies(list);
+    renderCompanySelect();
   }
   document.body.removeChild(overlay);
   renderCompanySelect();
