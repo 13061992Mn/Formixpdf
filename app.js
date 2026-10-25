@@ -32,7 +32,22 @@ function openFormixDB() {
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
-  });
+    function loadFormData(data) {
+  if (!data) return;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || "";
+  };
+  set("companyName", data.companyName);
+  set("companyContact", data.companyContact);
+  set("companyAddress", data.companyAddress);
+  set("clientName", data.clientName);
+  set("clientEmail", data.clientEmail);
+  set("clientAddress", data.clientAddress);
+  set("invoiceNumber", data.invoiceNumber);
+  set("invoiceDate", data.invoiceDate);
+  set("dueDate", data.dueDate);
+  set("notes", data.notes);
 }
 
 async function idbSavePages(id, pages) {
@@ -1706,20 +1721,32 @@ function renderHistory() {
     .join("");
 
   listEl.querySelectorAll(".history-open").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const item = getHistory().find((x) => x.id === btn.dataset.id);
-      if (!item || !item.dataUrl) return;
-      if (lastPdfBlobUrl && lastPdfBlobUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(lastPdfBlobUrl);
-      }
-      lastPdfDoc = null;
-      lastPdfFileName = item.fileName || "document.pdf";
-      setPdfFileNameInput(lastPdfFileName);
-      if (pdfPreviewFrame) pdfPreviewFrame.src = item.dataUrl;
-      document.getElementById("successMessage").textContent = item.title || "Saved document";
-      showScreen("successScreen");
-      lastPdfBlobUrl = item.dataUrl;
-    });
+  btn.addEventListener("click", () => {
+    const item = getHistory().find((x) => x.id === btn.dataset.id);
+    if (!item) return;
+
+    // If we have form data, load it for editing
+    if (item.formData) {
+      loadFormData(item.formData);
+      editingHistoryId = item.id;
+      showScreen("createScreen");
+      return;
+    }
+
+    // Fallback: just show the PDF
+    if (!item.dataUrl) return;
+    if (lastPdfBlobUrl && lastPdfBlobUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(lastPdfBlobUrl);
+    }
+    lastPdfDoc = null;
+    lastPdfFileName = item.fileName || "document.pdf";
+    setPdfFileNameInput(lastPdfFileName);
+    if (pdfPreviewFrame) pdfPreviewFrame.src = item.dataUrl;
+    document.getElementById("successMessage").textContent = "Document opened";
+    showScreen("successScreen");
+    lastPdfBlobUrl = item.dataUrl;
+  });
+});
   });
       listEl.querySelectorAll(".history-edit").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -1905,6 +1932,24 @@ pdfForm.addEventListener("submit", (e) => {
     const client = document.getElementById("clientName")?.value.trim() || "Client";
     const safeClient = client.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_").slice(0, 20);
     const name = `${invNum}-${safeClient || "Client"}.pdf`;
+    // Collect form data for later editing
+const formData = {
+  companyName: document.getElementById("companyName")?.value || "",
+  companyContact: document.getElementById("companyContact")?.value || "",
+  companyAddress: document.getElementById("companyAddress")?.value || "",
+  clientName: document.getElementById("clientName")?.value || "",
+  clientEmail: document.getElementById("clientEmail")?.value || "",
+  clientAddress: document.getElementById("clientAddress")?.value || "",
+  invoiceNumber: document.getElementById("invoiceNumber")?.value || "",
+  invoiceDate: document.getElementById("invoiceDate")?.value || "",
+  dueDate: document.getElementById("dueDate")?.value || "",
+  notes: document.getElementById("notes")?.value || "",
+  items: Array.from(document.querySelectorAll(".line-item")).map(row => ({
+    description: row.querySelector(".item-desc")?.value || "",
+    qty: row.querySelector(".item-qty")?.value || "",
+    price: row.querySelector(".item-price")?.value || ""
+  }))
+};
     const title = `Invoice ${invNum} · ${client}`;
 
     // Defer heavy preview work so the button state updates smoothly
@@ -2101,6 +2146,7 @@ if (saveHistoryBtn) {
             fileName,
             date: new Date().toISOString(),
             dataUrl
+            formData
           };
           saveHistory(list);
           if (pagesData) {
@@ -2115,13 +2161,14 @@ if (saveHistoryBtn) {
 
       const id = "h_" + Date.now();
       addToHistory({
-        id,
-        type: currentTemplate || "pdf",
-        title,
-        fileName,
-        date: new Date().toISOString(),
-        dataUrl
-      });
+  id,
+  type: currentTemplate || "pdf",
+  title,
+  fileName,
+  date: new Date().toISOString(),
+  dataUrl,
+  formData
+});
       if (pagesData) {
         try { await idbSavePages(id, pagesData); } catch (e) { console.warn(e); }
       }
