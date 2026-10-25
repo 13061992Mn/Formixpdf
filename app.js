@@ -2769,16 +2769,22 @@ overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,.5); z-i
 overlay.innerHTML = html;
 document.body.appendChild(overlay);
 
-overlay.querySelector("#addCompanyBtn").onclick = () => {
-  const name = overlay.querySelector("#newCompanyName").value.trim();
-  if (!name) return;
+overlay.querySelector("#addCompanyBtn").addEventListener("click", () => {
+  const input = overlay.querySelector("#newCompanyName");
+  const name = input ? input.value.trim() : "";
+  if (!name) {
+    alert("Please enter a company name");
+    return;
+  }
   const list = getCompanies();
-  list.push({ id: Date.now().toString(), name });
-  saveCompanies(list);
+  if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+    list.push({ name, address: "", email: "", phone: "" });
+    saveCompanies(list);
+  }
   document.body.removeChild(overlay);
-  openCompanyManager();
   renderCompanySelect();
-};
+  openCompanyManager(); // reopen so you see the new company
+});
 
 overlay.querySelectorAll(".del-company").forEach(btn => {
   btn.onclick = () => {
