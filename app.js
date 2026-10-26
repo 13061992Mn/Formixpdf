@@ -1747,8 +1747,7 @@ function renderHistory() {
     lastPdfBlobUrl = item.dataUrl;
   });
 });
-  });
-      listEl.querySelectorAll(".history-edit").forEach((btn) => {
+listEl.querySelectorAll(".history-edit").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
       if (!item) return;
