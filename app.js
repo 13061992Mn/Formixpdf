@@ -1822,7 +1822,6 @@ document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
     renderHistory();
   }
 });
-
 // ========== SUCCESS / PREVIEW ==========
 function sanitizeFileName(name) {
   let n = (name || "").trim();
