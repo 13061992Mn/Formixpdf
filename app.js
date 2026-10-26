@@ -1686,13 +1686,13 @@ function renderHistory() {
   if (!listEl) return;
   const list = getHistory();
   if (list.length === 0) {
-        listEl.innerHTML = `
-  <div class="history-empty">
-    <div class="empty-icon">📁</div>
-    <div class="empty-title">No documents yet</div>
-    <div class="empty-text">Scan a document or create an invoice and it will show up here.</div>
-    <button type="button" class="btn-primary" id="emptyGoScanBtn" style="margin-top:16px;">Scan a document</button>
-  </div>`;
+    listEl.innerHTML = `
+      <div class="history-empty">
+        <div class="empty-icon">📁</div>
+        <div class="empty-title">No documents yet</div>
+        <div class="empty-text">Scan a document or create an invoice to see it here</div>
+        <button type="button" class="btn-primary" id="emptyGoScanBtn">Scan a document</button>
+      </div>`;
     document.getElementById("emptyGoScanBtn")?.addEventListener("click", () => {
       currentTemplate = "scan";
       editingHistoryId = null;
@@ -1703,54 +1703,52 @@ function renderHistory() {
     return;
   }
   if (clearBtn) clearBtn.style.display = "block";
-    listEl.innerHTML = list
+  listEl.innerHTML = list
     .map(
       (item) => `
-    <div class="history-item" data-id="${item.id}">
-      <div class="history-info">
-        <div class="history-title">${item.title || item.fileName}</div>
-        <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
-      </div>
-                  <div class="history-actions">
-        ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">Aa</button>`}
-        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open PDF">↗</button>
-        <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
-      </div>
-    </div>`
+        <div class="history-item" data-id="${item.id}">
+          <div class="history-info">
+            <div class="history-title">${item.title || item.fileName || "Untitled"}</div>
+            <div class="history-meta">${item.type} • ${new Date(item.createdAt).toLocaleString()}</div>
+          </div>
+          <div class="history-actions">
+            ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit">✏️</button>` : ""}
+            <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">👁️</button>
+            <button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✏️</button>
+            <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">🗑️</button>
+          </div>
+        </div>`
     )
     .join("");
 
   listEl.querySelectorAll(".history-open").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    const item = getHistory().find((x) => x.id === btn.dataset.id);
-    if (!item) return;
-
-    // If we have form data, load it for editing
-    if (item.formData) {
-      loadFormData(item.formData);
-      editingHistoryId = item.id;
-      showScreen("createScreen");
-      return;
-    }
-
-    // Fallback: just show the PDF
-    if (!item.dataUrl) return;
-    if (lastPdfBlobUrl && lastPdfBlobUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(lastPdfBlobUrl);
-    }
-    lastPdfDoc = null;
-    lastPdfFileName = item.fileName || "document.pdf";
-    setPdfFileNameInput(lastPdfFileName);
-    if (pdfPreviewFrame) pdfPreviewFrame.src = item.dataUrl;
-    document.getElementById("successMessage").textContent = "Document opened";
-    showScreen("successScreen");
-    lastPdfBlobUrl = item.dataUrl;
+    btn.addEventListener("click", () => {
+      const item = getHistory().find((x) => x.id === btn.dataset.id);
+      if (!item) return;
+      if (item.formData) {
+        loadFormData(item.formData);
+        editingHistoryId = item.id;
+        showScreen("createScreen");
+        return;
+      }
+      if (!item.dataUrl) return;
+      if (lastPdfBlobUrl && lastPdfBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(lastPdfBlobUrl);
+      }
+      lastPdfDoc = null;
+      lastPdfFileName = item.fileName || "document.pdf";
+      setPdfFileNameInput(lastPdfFileName);
+      if (pdfPreviewFrame) pdfPreviewFrame.src = item.dataUrl;
+      document.getElementById("successMessage").textContent = "Document ready";
+      showScreen("successScreen");
+      lastPdfBlobUrl = item.dataUrl;
+    });
   });
+
   listEl.querySelectorAll(".history-edit").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
       if (!item) return;
-
       let pages = null;
       try {
         pages = await idbGetPages(item.id);
@@ -1760,36 +1758,34 @@ function renderHistory() {
       if ((!pages || !pages.length) && item.pages) {
         pages = item.pages;
       }
-
       if (!pages || !pages.length) {
-        alert("This scan has no editable pages saved.");
+        alert("This scan has no editable pages.");
         return;
       }
-
-            scannedImages = pages.map((p) => ({
+      scannedImages = pages.map((p) => ({
         original: p.image || p.original,
         manualCrop: null,
         cropped: null,
         filter: p.filter || "color",
         filterCache: {}
       }));
-
       currentTemplate = "scan";
       editingHistoryId = item.id;
       renderScanPreviews();
-      if (scanOptions) scanOptions.style.display = "flex";
+      if (scanOptions) scanOptions.style.display = "block";
       if (createScanPdfBtn) {
         createScanPdfBtn.textContent = "Save";
       }
       showScreen("scanScreen");
     });
   });
+
   listEl.querySelectorAll(".history-rename").forEach((btn) => {
     btn.addEventListener("click", () => {
       const list = getHistory();
       const item = list.find((x) => x.id === btn.dataset.id);
       if (!item) return;
-      let current = (item.fileName || item.title || "document").replace(/\.pdf$/i, "");
+      let current = (item.fileName || item.title || "").replace(/\.pdf$/i, "");
       const answer = prompt("Rename file:", current);
       if (answer === null) return;
       const clean = sanitizeFileName(answer);
@@ -1804,24 +1800,24 @@ function renderHistory() {
     });
   });
 
-    listEl.querySelectorAll(".history-delete").forEach((btn) => {
-  btn.addEventListener("click", async () => {
-    if (!confirm("Remove this document from history?")) return;
-    const id = btn.dataset.id;
-    const list = getHistory().filter((x) => x.id !== id);
-    saveHistory(list);
-    try { await idbDeletePages(id); } catch (e) {}
-    renderHistory();
+  listEl.querySelectorAll(".history-delete").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Remove this document from history?")) return;
+      const id = btn.dataset.id;
+      const list = getHistory().filter((x) => x.id !== id);
+      saveHistory(list);
+      try { await idbDeletePages(id); } catch (e) { console.warn(e); }
+      renderHistory();
+    });
   });
-});
 
-document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
-  if (confirm("Clear all history? This cannot be undone.")) {
-    saveHistory([]);
-    renderHistory();
-  }
-});
-  }
+  document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
+    if (confirm("Clear all history? This cannot be undone.")) {
+      saveHistory([]);
+      renderHistory();
+    }
+  });
+}
                                                    
 // ========== SUCCESS / PREVIEW ==========
 function sanitizeFileName(name) {
