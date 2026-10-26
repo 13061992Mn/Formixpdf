@@ -1805,16 +1805,15 @@ function renderHistory() {
   });
 
     listEl.querySelectorAll(".history-delete").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (!confirm("Remove this document from history?")) return;
-      const id = btn.dataset.id;
-      const list = getHistory().filter((x) => x.id !== id);
-      saveHistory(list);
-      try { await idbDeletePages(id); } catch (e) {}
-      renderHistory();
-    });
+  btn.addEventListener("click", async () => {
+    if (!confirm("Remove this document from history?")) return;
+    const id = btn.dataset.id;
+    const list = getHistory().filter((x) => x.id !== id);
+    saveHistory(list);
+    try { await idbDeletePages(id); } catch (e) {}
+    renderHistory();
   });
-}
+});
 
 document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
   if (confirm("Clear all history? This cannot be undone.")) {
