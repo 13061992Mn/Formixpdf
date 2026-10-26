@@ -2146,7 +2146,7 @@ if (saveHistoryBtn) {
             fileName,
             date: new Date().toISOString(),
             dataUrl,
-            formData
+            // formData
           };
           saveHistory(list);
           if (pagesData) {
@@ -2167,7 +2167,7 @@ if (saveHistoryBtn) {
   fileName,
   date: new Date().toISOString(),
   dataUrl,
-  formData
+  // formData
 });
       if (pagesData) {
         try { await idbSavePages(id, pagesData); } catch (e) { console.warn(e); }
