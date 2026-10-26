@@ -2145,7 +2145,7 @@ if (saveHistoryBtn) {
             title,
             fileName,
             date: new Date().toISOString(),
-            dataUrl
+            dataUrl,
             formData
           };
           saveHistory(list);
