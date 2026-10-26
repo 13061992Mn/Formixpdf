@@ -2875,3 +2875,4 @@ if (document.readyState === "loading") {
   initCompanySelect();
 }
 // ===== END COMPANY MANAGER =====
+  }
