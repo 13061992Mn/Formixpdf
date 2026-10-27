@@ -9,11 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.querySelectorAll('.feature-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const screen = card.getAttribute('data-template');
-      if (screen) showScreen(screen);
-    });
+  card.addEventListener('click', () => {
+    let screen = card.getAttribute('data-template');
+    if (screen === 'invoice' || screen === 'quote' || screen === 'contract' || screen === 'report') {
+      screen = 'form';
+    }
+    if (screen) showScreen(screen);
   });
+});
 
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
