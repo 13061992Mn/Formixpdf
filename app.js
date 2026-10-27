@@ -2909,4 +2909,30 @@ if (document.readyState === "loading") {
   }
 )
 }
+function openCompanyManager() {
+  const name = prompt('Company name:');
+  if (!name) return;
+  const email = prompt('Email / Phone:');
+  const address = prompt('Address:');
+  const company = { name, email, address };
+  const companies = JSON.parse(localStorage.getItem('companies') || '[]');
+  companies.push(company);
+  localStorage.setItem('companies', JSON.stringify(companies));
+  alert('Company saved');
+  loadCompanies();
+}
 
+function loadCompanies() {
+  const select = document.getElementById('companySelect');
+  if (!select) return;
+  const companies = JSON.parse(localStorage.getItem('companies') || '[]');
+  select.innerHTML = '<option value="">-- Select saved company --</option>';
+  companies.forEach((c, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = c.name;
+    select.appendChild(opt);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', loadCompanies);
