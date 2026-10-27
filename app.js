@@ -1917,6 +1917,7 @@ function showSuccessPreview(doc, fileName, title) {
 let isGeneratingPdf = false;
 
 pdfForm.addEventListener("submit", (e) => {
+  alert("Generate button clicked");
   e.preventDefault();
   if (isAnonymousTrialExpired()) {
   e.preventDefault();
