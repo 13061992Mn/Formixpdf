@@ -19,11 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const screen = item.getAttribute('data-screen') || item.getAttribute('data-template');
-      if (screen) showScreen(screen);
-    });
+  item.addEventListener('click', () => {
+    const screen = item.getAttribute('data-screen');
+    if (screen) showScreen(screen);
   });
+});
   document.querySelectorAll('button, a, .back').forEach(el => {
   if ((el.textContent || '').trim().includes('Back')) {
     el.addEventListener('click', () => showScreen('home'));
