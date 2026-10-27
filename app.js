@@ -2909,6 +2909,4 @@ if (document.readyState === "loading") {
   }
 )
 }
-function openCompanyManager() {
-  alert('Company manager will open here');
-}
+
