@@ -1,5 +1,5 @@
 // Formix PDF - Main App Logic
-
+console.log('APP.JSLOADED');
 const { jsPDF } = window.jspdf;
 
 // State
