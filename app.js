@@ -1,5 +1,21 @@
 // Formix PDF - Main App Logic
 console.log('APP.JSLOADED');
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const screen = card.getAttribute('data-screen');
+      if (screen && typeof showScreen === 'function') showScreen(screen);
+      else alert('Screen: ' + screen);
+    });
+  });
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const screen = item.getAttribute('data-screen');
+      if (screen && typeof showScreen === 'function') showScreen(screen);
+      else alert('Nav: ' + screen);
+    });
+  });
+});
 const { jsPDF } = window.jspdf;
 
 // State
