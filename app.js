@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (screen) showScreen(screen);
     });
   });
+  document.querySelectorAll('button, a, .back').forEach(el => {
+  if ((el.textContent || '').trim().includes('Back')) {
+    el.addEventListener('click', () => showScreen('home'));
+  }
+});
 });
 const { jsPDF } = window.jspdf;
 
