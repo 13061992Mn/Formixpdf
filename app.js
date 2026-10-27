@@ -1,18 +1,24 @@
 // Formix PDF - Main App Logic
 console.log('APP.JSLOADED');
 document.addEventListener('DOMContentLoaded', () => {
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id + 'Screen') || document.getElementById(id);
+    if (target) target.classList.add('active');
+    else alert('Screen not found: ' + id);
+  }
+
   document.querySelectorAll('.feature-card').forEach(card => {
     card.addEventListener('click', () => {
       const screen = card.getAttribute('data-template');
-      if (screen && typeof showScreen === 'function') showScreen(screen);
-      else alert('Screen: ' + screen);
+      if (screen) showScreen(screen);
     });
   });
+
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
-      const screen = item.getAttribute('data-template');
-      if (screen && typeof showScreen === 'function') showScreen(screen);
-      else alert('Nav: ' + screen);
+      const screen = item.getAttribute('data-screen') || item.getAttribute('data-template');
+      if (screen) showScreen(screen);
     });
   });
 });
