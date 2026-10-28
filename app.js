@@ -176,7 +176,6 @@ const sb = window.supabase
 let currentUser = null;
 let realSubscription = null;
     console.log('APP.JS before click listener');
-try {
 document.addEventListener("click", function (e) {
   if (!(window.__FORMIX_IOS || new URLSearchParams(location.search).get("platform") === "ios")) return;
   const el = e.target.closest("a,button");
