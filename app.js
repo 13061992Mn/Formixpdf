@@ -192,6 +192,7 @@ document.addEventListener("click", function (e) {
     window.webkit.messageHandlers.iap.postMessage("subscribe");
   }
 }, true);
+    console.log('APP.JS reached DOM Elements');
 // DOM Elements
 const formTitle = document.getElementById("formTitle");
 const pdfForm = document.getElementById("pdfForm");
