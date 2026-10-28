@@ -194,6 +194,7 @@ document.addEventListener("click", function (e) {
 // DOM Elements
 const formTitle = document.getElementById("formTitle");
 const pdfForm = document.getElementById("pdfForm");
+    console.log("pdfForm found:", !!pdfForm);
 const backBtn = document.getElementById("backBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const newBtn = document.getElementById("newBtn");
