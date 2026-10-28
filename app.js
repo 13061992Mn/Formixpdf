@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 });
-const { jsPDF } = window.jspdf;
+const jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
+console.log('jsPDF loaded:', !!jsPDF);
 
 // State
 let currentTemplate = "invoice";
