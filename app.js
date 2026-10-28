@@ -1,5 +1,6 @@
 // Formix PDF - Main App Logic
 console.log('APP.JSLOADED');
+console.log('APP.JS after load');
 document.addEventListener('DOMContentLoaded', () => {
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
