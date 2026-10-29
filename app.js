@@ -1,38 +1,6 @@
 // Formix PDF - Main App Logic
-console.log('APP.JSLOADED');
-console.log('APP.JS after load');
-document.addEventListener('DOMContentLoaded', () => {
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById(id + 'Screen') || document.getElementById(id);
-    if (target) target.classList.add('active');
-    else alert('Screen not found: ' + id);
-  }
 
-  document.querySelectorAll('.feature-card').forEach(card => {
-  card.addEventListener('click', () => {
-    let screen = card.getAttribute('data-template');
-    if (screen === 'invoice' || screen === 'quote' || screen === 'contract' || screen === 'report') {
-      screen = 'form';
-    }
-    if (screen) showScreen(screen);
-  });
-});
-
-  document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const screen = item.getAttribute('data-screen');
-    if (screen) showScreen(screen);
-  });
-});
-  document.querySelectorAll('button, a, .back').forEach(el => {
-  if ((el.textContent || '').trim().includes('Back')) {
-    el.addEventListener('click', () => showScreen('home'));
-  }
-});
-});
-const jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
-console.log('jsPDF loaded:', !!jsPDF);
+const { jsPDF } = window.jspdf;
 
 // State
 let currentTemplate = "invoice";
@@ -48,7 +16,6 @@ const PREFS_KEY = "formix_prefs";
 const CUSTOMERS_KEY = "formix_customers";
 const HISTORY_KEY = "formix_history";
 const MAX_HISTORY = 500;
-console.log('APP.JS reached state declarations');
 const FIRST_OPEN_KEY = "formix_first_open";
 // ========== INDEXEDDB FOR SCAN PAGES ==========
 const IDB_NAME = "formix_db";
@@ -65,22 +32,7 @@ function openFormixDB() {
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
-    function loadFormData(data) {
-  if (!data) return;
-  const set = (id, val) => {
-    const el = document.getElementById(id);
-    if (el) el.value = val || "";
-  };
-  set("companyName", data.companyName);
-  set("companyContact", data.companyContact);
-  set("companyAddress", data.companyAddress);
-  set("clientName", data.clientName);
-  set("clientEmail", data.clientEmail);
-  set("clientAddress", data.clientAddress);
-  set("invoiceNumber", data.invoiceNumber);
-  set("invoiceDate", data.invoiceDate);
-  set("dueDate", data.dueDate);
-  set("notes", data.notes);
+  });
 }
 
 async function idbSavePages(id, pages) {
@@ -177,7 +129,6 @@ const sb = window.supabase
 
 let currentUser = null;
 let realSubscription = null;
-    console.log('APP.JS before click listener');
 document.addEventListener("click", function (e) {
   if (!(window.__FORMIX_IOS || new URLSearchParams(location.search).get("platform") === "ios")) return;
   const el = e.target.closest("a,button");
@@ -195,11 +146,9 @@ document.addEventListener("click", function (e) {
     window.webkit.messageHandlers.iap.postMessage("subscribe");
   }
 }, true);
-    console.log('APP.JS reached DOM Elements');
 // DOM Elements
 const formTitle = document.getElementById("formTitle");
 const pdfForm = document.getElementById("pdfForm");
-    console.log("pdfForm found:", !!pdfForm);
 const backBtn = document.getElementById("backBtn");
 const downloadBtn = document.getElementById("downloadBtn");
 const newBtn = document.getElementById("newBtn");
@@ -1722,13 +1671,13 @@ function renderHistory() {
   if (!listEl) return;
   const list = getHistory();
   if (list.length === 0) {
-    listEl.innerHTML = `
-      <div class="history-empty">
-        <div class="empty-icon">📁</div>
-        <div class="empty-title">No documents yet</div>
-        <div class="empty-text">Scan a document or create an invoice to see it here</div>
-        <button type="button" class="btn-primary" id="emptyGoScanBtn">Scan a document</button>
-      </div>`;
+        listEl.innerHTML = `
+  <div class="history-empty">
+    <div class="empty-icon">📁</div>
+    <div class="empty-title">No documents yet</div>
+    <div class="empty-text">Scan a document or create an invoice and it will show up here.</div>
+    <button type="button" class="btn-primary" id="emptyGoScanBtn" style="margin-top:16px;">Scan a document</button>
+  </div>`;
     document.getElementById("emptyGoScanBtn")?.addEventListener("click", () => {
       currentTemplate = "scan";
       editingHistoryId = null;
@@ -1739,35 +1688,27 @@ function renderHistory() {
     return;
   }
   if (clearBtn) clearBtn.style.display = "block";
-  listEl.innerHTML = list
+    listEl.innerHTML = list
     .map(
       (item) => `
-        <div class="history-item" data-id="${item.id}">
-          <div class="history-info">
-            <div class="history-title">${item.title || item.fileName || "Untitled"}</div>
-            <div class="history-meta">${item.type} • ${new Date(item.createdAt).toLocaleString()}</div>
-          </div>
-          <div class="history-actions">
-            ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit">✏️</button>` : ""}
-            <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open">👁️</button>
-            <button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">✏️</button>
-            <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">🗑️</button>
-          </div>
-        </div>`
+    <div class="history-item" data-id="${item.id}">
+      <div class="history-info">
+        <div class="history-title">${item.title || item.fileName}</div>
+        <div class="history-meta">${item.type} · ${new Date(item.date).toLocaleString()}</div>
+      </div>
+                  <div class="history-actions">
+        ${item.type === "scan" ? `<button class="btn-icon-sm history-edit" data-id="${item.id}" title="Edit pages">✎</button>` : `<button class="btn-icon-sm history-rename" data-id="${item.id}" title="Rename">Aa</button>`}
+        <button class="btn-icon-sm history-open" data-id="${item.id}" title="Open PDF">↗</button>
+        <button class="btn-icon-sm history-delete" data-id="${item.id}" title="Delete">×</button>
+      </div>
+    </div>`
     )
     .join("");
 
   listEl.querySelectorAll(".history-open").forEach((btn) => {
     btn.addEventListener("click", () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
-      if (!item) return;
-      if (item.formData) {
-        loadFormData(item.formData);
-        editingHistoryId = item.id;
-        showScreen("createScreen");
-        return;
-      }
-      if (!item.dataUrl) return;
+      if (!item || !item.dataUrl) return;
       if (lastPdfBlobUrl && lastPdfBlobUrl.startsWith("blob:")) {
         URL.revokeObjectURL(lastPdfBlobUrl);
       }
@@ -1775,16 +1716,16 @@ function renderHistory() {
       lastPdfFileName = item.fileName || "document.pdf";
       setPdfFileNameInput(lastPdfFileName);
       if (pdfPreviewFrame) pdfPreviewFrame.src = item.dataUrl;
-      document.getElementById("successMessage").textContent = "Document ready";
+      document.getElementById("successMessage").textContent = item.title || "Saved document";
       showScreen("successScreen");
       lastPdfBlobUrl = item.dataUrl;
     });
   });
-
-  listEl.querySelectorAll(".history-edit").forEach((btn) => {
+      listEl.querySelectorAll(".history-edit").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const item = getHistory().find((x) => x.id === btn.dataset.id);
       if (!item) return;
+
       let pages = null;
       try {
         pages = await idbGetPages(item.id);
@@ -1794,34 +1735,36 @@ function renderHistory() {
       if ((!pages || !pages.length) && item.pages) {
         pages = item.pages;
       }
+
       if (!pages || !pages.length) {
-        alert("This scan has no editable pages.");
+        alert("This scan has no editable pages saved.");
         return;
       }
-      scannedImages = pages.map((p) => ({
+
+            scannedImages = pages.map((p) => ({
         original: p.image || p.original,
         manualCrop: null,
         cropped: null,
         filter: p.filter || "color",
         filterCache: {}
       }));
+
       currentTemplate = "scan";
       editingHistoryId = item.id;
       renderScanPreviews();
-      if (scanOptions) scanOptions.style.display = "block";
+      if (scanOptions) scanOptions.style.display = "flex";
       if (createScanPdfBtn) {
         createScanPdfBtn.textContent = "Save";
       }
       showScreen("scanScreen");
     });
   });
-
   listEl.querySelectorAll(".history-rename").forEach((btn) => {
     btn.addEventListener("click", () => {
       const list = getHistory();
       const item = list.find((x) => x.id === btn.dataset.id);
       if (!item) return;
-      let current = (item.fileName || item.title || "").replace(/\.pdf$/i, "");
+      let current = (item.fileName || item.title || "document").replace(/\.pdf$/i, "");
       const answer = prompt("Rename file:", current);
       if (answer === null) return;
       const clean = sanitizeFileName(answer);
@@ -1836,25 +1779,25 @@ function renderHistory() {
     });
   });
 
-  listEl.querySelectorAll(".history-delete").forEach((btn) => {
+    listEl.querySelectorAll(".history-delete").forEach((btn) => {
     btn.addEventListener("click", async () => {
       if (!confirm("Remove this document from history?")) return;
       const id = btn.dataset.id;
       const list = getHistory().filter((x) => x.id !== id);
       saveHistory(list);
-      try { await idbDeletePages(id); } catch (e) { console.warn(e); }
+      try { await idbDeletePages(id); } catch (e) {}
       renderHistory();
     });
   });
-
-  document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
-    if (confirm("Clear all history? This cannot be undone.")) {
-      saveHistory([]);
-      renderHistory();
-    }
-  });
 }
-                                                   
+
+document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
+  if (confirm("Clear all history? This cannot be undone.")) {
+    saveHistory([]);
+    renderHistory();
+  }
+});
+
 // ========== SUCCESS / PREVIEW ==========
 function sanitizeFileName(name) {
   let n = (name || "").trim();
@@ -1923,7 +1866,6 @@ function showSuccessPreview(doc, fileName, title) {
 let isGeneratingPdf = false;
 
 pdfForm.addEventListener("submit", (e) => {
-  alert("Generate button clicked");
   e.preventDefault();
   if (isAnonymousTrialExpired()) {
   e.preventDefault();
@@ -1963,24 +1905,6 @@ pdfForm.addEventListener("submit", (e) => {
     const client = document.getElementById("clientName")?.value.trim() || "Client";
     const safeClient = client.replace(/[\\/:*?"<>|]/g, "").replace(/\s+/g, "_").slice(0, 20);
     const name = `${invNum}-${safeClient || "Client"}.pdf`;
-    // Collect form data for later editing
-const formData = {
-  companyName: document.getElementById("companyName")?.value || "",
-  companyContact: document.getElementById("companyContact")?.value || "",
-  companyAddress: document.getElementById("companyAddress")?.value || "",
-  clientName: document.getElementById("clientName")?.value || "",
-  clientEmail: document.getElementById("clientEmail")?.value || "",
-  clientAddress: document.getElementById("clientAddress")?.value || "",
-  invoiceNumber: document.getElementById("invoiceNumber")?.value || "",
-  invoiceDate: document.getElementById("invoiceDate")?.value || "",
-  dueDate: document.getElementById("dueDate")?.value || "",
-  notes: document.getElementById("notes")?.value || "",
-  items: Array.from(document.querySelectorAll(".line-item")).map(row => ({
-    desc: row.querySelector(".item-desc")?.value || "",
-    qty: row.querySelector(".item-qty")?.value || "",
-    price: row.querySelector(".item-price")?.value || ""
-  }))
-};
     const title = `Invoice ${invNum} · ${client}`;
 
     // Defer heavy preview work so the button state updates smoothly
@@ -2176,8 +2100,7 @@ if (saveHistoryBtn) {
             title,
             fileName,
             date: new Date().toISOString(),
-            dataUrl,
-            // formData
+            dataUrl
           };
           saveHistory(list);
           if (pagesData) {
@@ -2192,14 +2115,13 @@ if (saveHistoryBtn) {
 
       const id = "h_" + Date.now();
       addToHistory({
-  id,
-  type: currentTemplate || "pdf",
-  title,
-  fileName,
-  date: new Date().toISOString(),
-  dataUrl,
-  // formData
-});
+        id,
+        type: currentTemplate || "pdf",
+        title,
+        fileName,
+        date: new Date().toISOString(),
+        dataUrl
+      });
       if (pagesData) {
         try { await idbSavePages(id, pagesData); } catch (e) { console.warn(e); }
       }
@@ -2795,151 +2717,3 @@ function initAccountButtons() {
 setTimeout(function() {
   initAccountButtons();
 }, 500);
-
-// ===== COMPANY MANAGER =====
-const COMPANIES_KEY = "formix_companies";
-const LAST_COMPANY_KEY = "formix_last_company";
-
-function getCompanies() {
-  try { return JSON.parse(localStorage.getItem(COMPANIES_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveCompanies(list) {
-  localStorage.setItem(COMPANIES_KEY, JSON.stringify(list));
-}
-
-function renderCompanySelect() {
-  const select = document.getElementById("companySelect");
-  if (!select) return;
-  const companies = getCompanies();
-  select.innerHTML = '<option value="">Select company</option>';
-  companies.forEach((c, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = c.name;
-    select.appendChild(opt);
-  });
-  const last = localStorage.getItem(LAST_COMPANY_KEY);
-  if (last !== null && companies[last]) {
-    select.value = last;
-  }
-}
-
-function openCompanyManager() {
-  const existing = document.getElementById("companyModalOverlay");
-  if (existing) existing.remove();
-
-  const overlay = document.createElement("div");
-  overlay.id = "companyModalOverlay";
-  overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; display:flex; align-items:center; justify-content:center;";
-  overlay.innerHTML = `
-    <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:400px;">
-      <h3 style="margin:0 0 12px 0;">Companies</h3>
-      <div id="companyList" style="max-height:200px; overflow:auto; margin-bottom:12px;"></div>
-      <input id="newCompanyName" type="text" placeholder="Company name" style="width:100%; margin-bottom:8px; padding:8px;">
-      <input id="newCompanyEmail" type="email" placeholder="Email" style="width:100%; margin-bottom:8px; padding:8px;">
-      <input id="newCompanyAddress" type="text" placeholder="Address" style="width:100%; margin-bottom:12px; padding:8px;">
-      <button type="button" id="addCompanyBtn" style="width:100%; padding:10px; margin-bottom:8px;">Add company</button>
-      <button type="button" id="closeCompanyManagerBtn" style="width:100%; padding:10px;">Close</button>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const listDiv = overlay.querySelector("#companyList");
-  const companies = getCompanies();
-  companies.forEach((c, i) => {
-    const row = document.createElement("div");
-    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #eee;";
-    row.innerHTML = `<span>${c.name}</span><button type="button" class="del-company" data-idx="${i}">Delete</button>`;
-    listDiv.appendChild(row);
-  });
-
-  overlay.querySelector("#addCompanyBtn").onclick = () => {
-    const name = overlay.querySelector("#newCompanyName").value.trim();
-    if (!name) return alert("Enter a company name");
-    const list = getCompanies();
-    if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-      list.push({
-        name,
-        email: overlay.querySelector("#newCompanyEmail").value.trim(),
-        address: overlay.querySelector("#newCompanyAddress").value.trim(),
-        phone: ""
-      });
-      saveCompanies(list);
-    }
-    overlay.remove();
-    renderCompanySelect();
-    openCompanyManager();
-  };
-
-  overlay.querySelector("#closeCompanyManagerBtn").onclick = () => overlay.remove();
-
-  overlay.querySelectorAll(".del-company").forEach(btn => {
-    btn.onclick = () => {
-      const idx = +btn.dataset.idx;
-      const list = getCompanies();
-      list.splice(idx, 1);
-      saveCompanies(list);
-      overlay.remove();
-      renderCompanySelect();
-      openCompanyManager();
-    };
-  });
-}
-
-function initCompanySelect() {
-  renderCompanySelect();
-  const select = document.getElementById("companySelect");
-  if (select) {
-    select.addEventListener("change", () => {
-      const companies = getCompanies();
-      const idx = select.value;
-      localStorage.setItem(LAST_COMPANY_KEY, idx);
-      if (idx === "" || !companies[idx]) return;
-      const c = companies[idx];
-      const nameEl = document.getElementById("companyName");
-      const emailEl = document.getElementById("companyContact");
-      const addressEl = document.getElementById("companyAddress");
-      if (nameEl) nameEl.value = c.name || "";
-      if (emailEl) emailEl.value = c.email || "";
-      if (addressEl) addressEl.value = c.address || "";
-    });
-  }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initCompanySelect);
-} else {
-  initCompanySelect();
-}
-// ===== END COMPANY MANAGER =====
-  }
-)
-}
-function openCompanyManager() {
-  const name = prompt('Company name:');
-  if (!name) return;
-  const email = prompt('Email / Phone:');
-  const address = prompt('Address:');
-  const company = { name, email, address };
-  const companies = JSON.parse(localStorage.getItem('companies') || '[]');
-  companies.push(company);
-  localStorage.setItem('companies', JSON.stringify(companies));
-  alert('Company saved');
-  loadCompanies();
-}
-
-function loadCompanies() {
-  const select = document.getElementById('companySelect');
-  if (!select) return;
-  const companies = JSON.parse(localStorage.getItem('companies') || '[]');
-  select.innerHTML = '<option value="">-- Select saved company --</option>';
-  companies.forEach((c, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = c.name;
-    select.appendChild(opt);
-  });
-}
-
-document.addEventListener('DOMContentLoaded', loadCompanies);
