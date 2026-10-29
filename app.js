@@ -2717,3 +2717,120 @@ function initAccountButtons() {
 setTimeout(function() {
   initAccountButtons();
 }, 500);
+
+// ===== COMPANY MANAGER =====
+const COMPANIES_KEY = "formix_companies";
+const LAST_COMPANY_KEY = "formix_last_company";
+
+function getCompanies() {
+  try { return JSON.parse(localStorage.getItem(COMPANIES_KEY) || "[]"); }
+  catch { return []; }
+}
+function saveCompanies(list) {
+  localStorage.setItem(COMPANIES_KEY, JSON.stringify(list));
+}
+
+function renderCompanySelect() {
+  const select = document.getElementById("companySelect");
+  if (!select) return;
+  const companies = getCompanies();
+  select.innerHTML = '<option value="">-- Select company --</option>';
+  companies.forEach((c, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = c.name;
+    select.appendChild(opt);
+  });
+  const last = localStorage.getItem(LAST_COMPANY_KEY);
+  if (last !== null && companies[last]) {
+    select.value = last;
+  }
+}
+
+function openCompanyManager() {
+  const existing = document.getElementById("companyModalOverlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "companyModalOverlay";
+  overlay.style.cssText = "position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99999; display:flex; align-items:center; justify-content:center;";
+  overlay.innerHTML = `
+    <div style="background:#fff; padding:16px; border-radius:12px; width:90%; max-width:340px; box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+      <h3 style="margin:0 0 12px 0;">Companies</h3>
+      <div id="companyList" style="max-height:180px; overflow-y:auto; margin-bottom:12px;"></div>
+      <input id="newCompanyName" type="text" placeholder="Company name" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <input id="newCompanyEmail" type="text" placeholder="Email / Phone" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <input id="newCompanyAddress" type="text" placeholder="Address" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:8px;">
+      <button type="button" id="addCompanyBtn" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff; margin-bottom:8px;">Add Company</button>
+      <button type="button" id="closeCompanyModal" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:#fff;">Close</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const listDiv = overlay.querySelector("#companyList");
+  const companies = getCompanies();
+  companies.forEach((c, i) => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #eee;";
+    row.innerHTML = `<span>${c.name}</span><button type="button" class="del-company" data-idx="${i}" style="background:none; border:none; color:#e55; font-size:18px;">×</button>`;
+    listDiv.appendChild(row);
+  });
+
+  overlay.querySelector("#addCompanyBtn").onclick = () => {
+    const name = overlay.querySelector("#newCompanyName").value.trim();
+    if (!name) return alert("Enter a company name");
+    const list = getCompanies();
+    if (!list.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+      list.push({
+        name,
+        email: overlay.querySelector("#newCompanyEmail").value.trim(),
+        address: overlay.querySelector("#newCompanyAddress").value.trim(),
+        phone: ""
+      });
+      saveCompanies(list);
+    }
+    overlay.remove();
+    renderCompanySelect();
+    openCompanyManager();
+  };
+
+  overlay.querySelector("#closeCompanyModal").onclick = () => overlay.remove();
+
+  overlay.querySelectorAll(".del-company").forEach(btn => {
+    btn.onclick = () => {
+      const idx = +btn.dataset.idx;
+      const list = getCompanies();
+      list.splice(idx, 1);
+      saveCompanies(list);
+      overlay.remove();
+      renderCompanySelect();
+      openCompanyManager();
+    };
+  });
+}
+function initCompanySelect() {
+  renderCompanySelect();
+  const select = document.getElementById("companySelect");
+  if (select) {
+    select.addEventListener("change", () => {
+      const companies = getCompanies();
+      const idx = select.value;
+      localStorage.setItem(LAST_COMPANY_KEY, idx);
+      if (idx === "" || !companies[idx]) return;
+      const c = companies[idx];
+      const nameEl = document.getElementById("companyName");
+const emailEl = document.getElementById("companyContact");
+const addressEl = document.getElementById("companyAddress");
+if (nameEl) nameEl.value = c.name || "";
+if (emailEl) emailEl.value = c.email || "";
+if (addressEl) addressEl.value = c.address || "";
+    });
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initCompanySelect);
+} else {
+  initCompanySelect();
+}
+// ===== END COMPANY MANAGER =====
