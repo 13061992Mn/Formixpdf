@@ -1790,20 +1790,7 @@ function renderHistory() {
     });
   });
 }
-listEl.querySelectorAll('.history-edit-doc').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    const item = getHistory().find(x => x.id === btn.dataset.id);
-    if (!item || !item.data) return;
-    // Load the saved data into the form
-    Object.keys(item.data).forEach(key => {
-      const el = document.getElementById(key);
-      if (el) el.value = item.data[key];
-    });
-    currentTemplate = item.type;
-    editingHistoryId = item.id;
-    showScreen(item.type + 'Screen');
-  });
-});
+
 document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
   if (confirm("Clear all history? This cannot be undone.")) {
     saveHistory([]);
