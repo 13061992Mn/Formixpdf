@@ -1789,7 +1789,6 @@ function renderHistory() {
       renderHistory();
     });
   });
-}
     listEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.history-edit-doc');
     if (!btn) return;
@@ -1808,6 +1807,8 @@ function renderHistory() {
     editingHistoryId = item.id;
     showScreen('formScreen');
   });
+}
+      
 document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
   if (confirm("Clear all history? This cannot be undone.")) {
     saveHistory([]);
