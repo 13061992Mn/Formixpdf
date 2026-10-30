@@ -1790,7 +1790,24 @@ function renderHistory() {
     });
   });
 }
-  
+    listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.history-edit-doc');
+    if (!btn) return;
+    const item = getHistory().find(x => x.id === btn.dataset.id);
+    if (!item || !item.data) return;
+
+    currentTemplate = item.type || 'invoice';
+    updateFormForTemplate(currentTemplate);
+    formTitle.textContent = templateTitles[currentTemplate] || 'Create Document';
+
+    Object.keys(item.data).forEach(key => {
+      const el = document.getElementById(key);
+      if (el) el.value = item.data[key];
+    });
+
+    editingHistoryId = item.id;
+    showScreen('formScreen');
+  });
 document.getElementById("clearHistoryBtn")?.addEventListener("click", () => {
   if (confirm("Clear all history? This cannot be undone.")) {
     saveHistory([]);
