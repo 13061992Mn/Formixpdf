@@ -2113,12 +2113,18 @@ if (saveHistoryBtn) {
         const list = getHistory();
         const idx = list.findIndex((x) => x.id === editingHistoryId);
         if (idx >= 0) {
+                    const formData = {};
+          pdfForm.querySelectorAll('input, select, textarea').forEach(el => {
+            if (el.id) formData[el.id] = el.value;
+          });
+
           list[idx] = {
             ...list[idx],
             title,
             fileName,
             date: new Date().toISOString(),
-            dataUrl
+            dataUrl,
+            data: formData
           };
           saveHistory(list);
           if (pagesData) {
