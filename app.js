@@ -2132,13 +2132,19 @@ if (saveHistoryBtn) {
       }
 
       const id = "h_" + Date.now();
+            const formData = {};
+      pdfForm.querySelectorAll('input, select, textarea').forEach(el => {
+        if (el.id) formData[el.id] = el.value;
+      });
+
       addToHistory({
         id,
         type: currentTemplate || "pdf",
         title,
         fileName,
         date: new Date().toISOString(),
-        dataUrl
+        dataUrl,
+        data: formData
       });
       if (pagesData) {
         try { await idbSavePages(id, pagesData); } catch (e) { console.warn(e); }
