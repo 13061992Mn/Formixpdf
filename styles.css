@@ -922,22 +922,23 @@ body {
 /* Success / Preview */
 .pdf-preview-wrap {
   width: 100%;
-  height: calc(100vh - 220px);
-  min-height: 500px;
+  height: 70vh !important;
+  min-height: 480px !important;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  margin: 12px 0;
+  margin: 8px 0 16px;
   background: #f0f0f0;
+  position: relative;
 }
 
 .pdf-preview-wrap iframe {
   width: 100%;
-  height: 100%;
+  height: 100% !important;
   border: none;
   background: white;
+  display: block;
 }
-
 .pdf-preview-wrap iframe {
   width: 100%;
   height: 100%;
