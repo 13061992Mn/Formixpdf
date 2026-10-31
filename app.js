@@ -2864,3 +2864,26 @@ if (document.readyState === "loading") {
   initCompanySelect();
 }
 // ===== END COMPANY MANAGER =====
+// Full-screen PDF preview
+document.addEventListener('DOMContentLoaded', () => {
+  const fullscreenPreview = document.getElementById('fullscreenPreview');
+  const fullscreenPreviewFrame = document.getElementById('fullscreenPreviewFrame');
+  const closeFullscreenPreview = document.getElementById('closeFullscreenPreview');
+  const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
+
+  if (pdfPreviewFrame && fullscreenPreview && fullscreenPreviewFrame) {
+    pdfPreviewFrame.addEventListener('click', () => {
+      if (pdfPreviewFrame.src) {
+        fullscreenPreviewFrame.src = pdfPreviewFrame.src;
+        fullscreenPreview.style.display = 'flex';
+      }
+    });
+  }
+
+  if (closeFullscreenPreview && fullscreenPreview && fullscreenPreviewFrame) {
+    closeFullscreenPreview.addEventListener('click', () => {
+      fullscreenPreview.style.display = 'none';
+      fullscreenPreviewFrame.src = '';
+    });
+  }
+});
