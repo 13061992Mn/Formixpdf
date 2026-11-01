@@ -1265,7 +1265,7 @@ body {
   height: calc(100vh - 50px);
   border: none;
   background: #111;
-  transform: scale(0.75);
+  transform: scale(0.62);
   transform-origin: top center;
 }
 .fullscreen-preview {
