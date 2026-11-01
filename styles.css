@@ -1266,3 +1266,27 @@ body {
   border: none;
   background: white;
 }
+.pdf-preview-click-area {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  min-height: 400px;
+  cursor: pointer;
+}
+
+.pdf-preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+}
+
+.pdf-preview-tap-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 2;
+}
