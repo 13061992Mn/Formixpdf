@@ -2875,7 +2875,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pdfPreviewClickArea && pdfPreviewFrame && fullscreenPreview && fullscreenPreviewFrame) {
     pdfPreviewClickArea.addEventListener('click', () => {
       if (pdfPreviewFrame.src) {
-        fullscreenPreviewFrame.src = pdfPreviewFrame.src;
+        fullscreenPreviewFrame.src = pdfPreviewFrame.src + '#view=FitH';
         fullscreenPreview.style.display = 'flex';
       }
     });
