@@ -2870,9 +2870,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const fullscreenPreviewFrame = document.getElementById('fullscreenPreviewFrame');
   const closeFullscreenPreview = document.getElementById('closeFullscreenPreview');
   const pdfPreviewFrame = document.getElementById('pdfPreviewFrame');
+  const pdfPreviewClickArea = document.getElementById('pdfPreviewClickArea');
 
-  if (pdfPreviewFrame && fullscreenPreview && fullscreenPreviewFrame) {
-    pdfPreviewFrame.addEventListener('click', () => {
+  if (pdfPreviewClickArea && pdfPreviewFrame && fullscreenPreview && fullscreenPreviewFrame) {
+    pdfPreviewClickArea.addEventListener('click', () => {
       if (pdfPreviewFrame.src) {
         fullscreenPreviewFrame.src = pdfPreviewFrame.src;
         fullscreenPreview.style.display = 'flex';
