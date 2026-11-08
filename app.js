@@ -2408,6 +2408,11 @@ function updateAccountUI() {
       btn.textContent = "Sign in with Google";
       btn.onclick = signInWithGoogle;
     }
+    const appleBtn = document.getElementById("appleSignInBtn");
+if (appleBtn) {
+  appleBtn.style.display = "block";
+  appleBtn.onclick = signInWithApple;
+}
     if (homeBtn) {
       homeBtn.textContent = "Sign in with Google";
       homeBtn.onclick = signInWithGoogle;
