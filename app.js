@@ -2300,7 +2300,23 @@ async function signInWithGoogle() {
     alert("Login failed: " + error.message);
   }
 }
+async function signInWithApple() {
+  if (!sb) {
+    alert("Authentication is not ready. Please try again.");
+    return;
+  }
 
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: "apple",
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+
+  if (error) {
+    alert("Login failed: " + error.message);
+  }
+}
 async function signOut() {
   if (sb) {
     await sb.auth.signOut();
