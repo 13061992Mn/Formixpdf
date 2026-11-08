@@ -2414,8 +2414,8 @@ if (appleBtn) {
   appleBtn.onclick = signInWithApple;
 }
     if (homeBtn) {
-      homeBtn.textContent = "Sign in with Google";
-      homeBtn.onclick = signInWithGoogle;
+    homeBtn.textContent = "Sign in";
+homeBtn.onclick = () => showScreen("accountScreen");  
     }
     return;
   }
