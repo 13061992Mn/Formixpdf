@@ -2441,6 +2441,8 @@ if (planEl) planEl.textContent = isTrial ? "Free Trial (3 days)" : "Pro · $5/mo
       btn.textContent = "Manage Subscription";
       btn.onclick = goToCustomerPortal;
     }
+      const appleBtn = document.getElementById("appleSignInBtn");
+if (appleBtn) appleBtn.style.display = "none";
 }
   } else {
     badge.textContent = "Free";
