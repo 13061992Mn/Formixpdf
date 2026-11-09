@@ -2911,3 +2911,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+async function signInWithEmail() {
+const email = document.getElementById("emailInput").value.trim();
+const password = document.getElementById("passwordInput").value;
+if (!email || !password) {
+alert("Please enter email and password");
+return;
+}
+const { data, error } = await sb.auth.signInWithPassword({ email, password });
+if (error) {
+alert(error.message);
+} else {
+currentUser = data.user;
+updateAccountUI();
+}
+}
+
+document.getElementById("emailSignInBtn")?.addEventListener("click", signInWithEmail);
